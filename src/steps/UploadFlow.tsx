@@ -11,8 +11,12 @@ import { MatchColumnsStep } from "./MatchColumnsStep/MatchColumnsStep"
 import { exceedsMaxRecords } from "../utils/exceedsMaxRecords"
 import { useRsi } from "../hooks/useRsi"
 import type { RawData } from "../types"
+import { SelectEditorStep } from "./SelectEditorStep/SelectEditorStep"
 
 export enum StepType {
+  organizationSelect= "organizationSelect",
+  selectImportType = "selectImportType",
+  selectEditorProfile = "selectEditorProfile",
   upload = "upload",
   selectSheet = "selectSheet",
   selectHeader = "selectHeader",
@@ -20,6 +24,16 @@ export enum StepType {
   validateData = "validateData",
 }
 export type StepState =
+  | {
+    type: StepType.organizationSelect
+    }
+
+  | {
+    type: StepType.selectImportType
+    }
+  | {
+    type: StepType.selectEditorProfile
+    }
   | {
       type: StepType.upload
     }
@@ -75,6 +89,48 @@ export const UploadFlow = ({ state, onNext, onBack }: Props) => {
   )
 
   switch (state.type) {
+    case StepType.organizationSelect:
+      return (
+        <SelectEditorStep
+                               onContinue={async (...args) => {
+                                 try {
+                                   onNext({
+                                     type: StepType.selectImportType,
+                                   })
+                                 } catch (e) {
+                                   errorToast((e as Error).message)
+                                 }
+                               }}
+                               />
+      )
+    case StepType.selectImportType:
+      return (
+        <SelectEditorStep
+          onContinue={async (...args) => {
+            try {
+              onNext({
+                type: StepType.selectEditorProfile,
+              })
+            } catch (e) {
+              errorToast((e as Error).message)
+            }
+          }}
+        />
+      )
+    case StepType.selectEditorProfile:
+      return (
+        <SelectEditorStep
+          onContinue={async (...args) => {
+            try {
+              onNext({
+                type: StepType.upload,
+              })
+            } catch (e) {
+              errorToast((e as Error).message)
+            }
+          }}
+        />
+      )
     case StepType.upload:
       return (
         <UploadStep

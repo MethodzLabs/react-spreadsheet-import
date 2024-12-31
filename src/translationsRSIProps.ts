@@ -1,6 +1,15 @@
 import type { DeepPartial } from "ts-essentials"
 
 export const translations = {
+  organizationSelect: {
+    title: "Select Organization",
+  },
+  selectImportType: {
+    title: "Type d'import",
+  },
+  selectEditorProfile: {
+    title: "Profile d'import",
+  },
   uploadStep: {
     title: "Upload file",
     manifestTitle: "Data that we expect:",

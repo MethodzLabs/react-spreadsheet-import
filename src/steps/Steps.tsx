@@ -18,7 +18,7 @@ export const Steps = () => {
     initialStep,
   })
 
-  const [state, setState] = useState<StepState>(initialStepState || { type: StepType.upload })
+  const [state, setState] = useState<StepState>(initialStepState || { type: StepType.organizationSelect })
 
   const history = useRef<StepState[]>([])
 
