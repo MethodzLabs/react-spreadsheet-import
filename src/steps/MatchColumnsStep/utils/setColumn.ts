@@ -21,7 +21,7 @@ export const setColumn = <T extends string>(
           })
         : uniqueData
       const allMatched = matchedOptions.filter((o) => o.value).length == uniqueData?.length
-
+      console.log(allMatched)
       return {
         ...oldColumn,
         type: allMatched ? ColumnType.matchedSelectOptions : ColumnType.matchedSelect,

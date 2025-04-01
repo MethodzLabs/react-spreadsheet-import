@@ -7,9 +7,10 @@ type ContinueButtonProps = {
   title: string
   backTitle?: string
   isLoading?: boolean
+  disabled?: boolean
 }
 
-export const ContinueButton = ({ onContinue, onBack, title, backTitle, isLoading }: ContinueButtonProps) => {
+export const ContinueButton = ({ onContinue, onBack, title, backTitle, isLoading,disabled }: ContinueButtonProps) => {
   const styles = useStyleConfig("Modal") as (typeof themeOverrides)["components"]["Modal"]["baseStyle"]
   const nextButtonMobileWidth = onBack ? "8rem" : "100%"
   return (

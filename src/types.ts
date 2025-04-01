@@ -49,6 +49,8 @@ export type RsiProps<T extends string> = {
   parseRaw?: boolean
   // Use for right-to-left (RTL) support
   rtl?: boolean
+
+  organizations: any[]
 }
 
 export type RawData = Array<string | undefined>

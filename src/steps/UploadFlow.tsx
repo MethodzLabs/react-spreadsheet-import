@@ -12,6 +12,8 @@ import { exceedsMaxRecords } from "../utils/exceedsMaxRecords"
 import { useRsi } from "../hooks/useRsi"
 import type { RawData } from "../types"
 import { SelectEditorStep } from "./SelectEditorStep/SelectEditorStep"
+import { SelectImportTypeStep } from "./SelectImportTypeStep/SelectImportTypeStep"
+import { SelectEditorProfileStep } from "./SelectEditorProfileStep/SelectEditorProfileStep"
 
 export enum StepType {
   organizationSelect= "organizationSelect",
@@ -74,6 +76,7 @@ export const UploadFlow = ({ state, onNext, onBack }: Props) => {
   } = useRsi()
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const toast = useToast()
+  const [organization, setOrganization] = useState(null)
   const errorToast = useCallback(
     (description: string) => {
       toast({
@@ -94,6 +97,7 @@ export const UploadFlow = ({ state, onNext, onBack }: Props) => {
         <SelectEditorStep
                                onContinue={async (...args) => {
                                  try {
+                                   setOrganization(args[0])
                                    onNext({
                                      type: StepType.selectImportType,
                                    })
@@ -105,7 +109,7 @@ export const UploadFlow = ({ state, onNext, onBack }: Props) => {
       )
     case StepType.selectImportType:
       return (
-        <SelectEditorStep
+        <SelectImportTypeStep
           onContinue={async (...args) => {
             try {
               onNext({
@@ -119,7 +123,7 @@ export const UploadFlow = ({ state, onNext, onBack }: Props) => {
       )
     case StepType.selectEditorProfile:
       return (
-        <SelectEditorStep
+        <SelectEditorProfileStep
           onContinue={async (...args) => {
             try {
               onNext({
