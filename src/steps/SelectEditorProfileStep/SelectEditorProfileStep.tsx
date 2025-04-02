@@ -44,37 +44,40 @@ import { ContinueButton } from "../../components/ContinueButton";
 
 export type Profile = {
   id?: string;
-  name?: string;
-  themes: string[];
-  languages: string[];
-  targetCountries: string[];
-  linkType: 'DO_FOLLOW' | 'NO_FOLLOW' | 'BOTH';
-  nbMaxLinksClient: number;
-  nbMaxLinksExternal: number;
-  nbWords: number;
-  sponso: "SPONSO" | "NO_SPONSO" | "BOTH";
-  isPrivate: boolean;
-  isGoogleNews: boolean;
-  validityDuration: "FOREVER" | "SIX_MONTHS" | "TWELVE_MONTHS" | "TWENTY_FOUR_MONTHS";
-  category: "IMPOSED" | "IMPOSED_CATEGORY" | "NOT_IMPOSED";
-  categoryUrl: string | null;
-  redactionType: "HUMAN" | "AI" | "MIXED";
-  priceWithoutRedaction: number | null;
-  priceWithRedaction: number | null;
-  additionnalPriceCrypto: number | null;
-  additionnalPriceHealth: number | null;
-  additionnalPriceCBD: number | null;
-  additionnalPriceSex: number | null;
-  additionnalPriceFinance: number | null;
-  additionnalPriceCasino: number | null;
-  additionalPriceSponso: number | null;
-  additionalPriceDofollow: number | null;
-  pricePer100Words: number | null;
+  organizationId?: string;
+  name?: string| undefined;
+  themes: string[]| undefined;
+  languages: string[] | undefined;
+  targetCountries: string[]| undefined;
+  linkType: 'DO_FOLLOW' | 'NO_FOLLOW' | 'BOTH'| undefined;
+  nbMaxLinksClient: number| undefined;
+  nbMaxLinksExternal: number| undefined;
+  nbWords: number| undefined;
+  sponso: "SPONSO" | "NO_SPONSO" | "BOTH"| undefined;
+  isPrivate: boolean| undefined;
+  isGoogleNews: boolean | undefined;
+  validityDuration: "FOREVER" | "SIX_MONTHS" | "TWELVE_MONTHS" | "TWENTY_FOUR_MONTHS" | undefined;
+  category: "IMPOSED" | "IMPOSED_CATEGORY" | "NOT_IMPOSED" | undefined;
+  categoryUrl: string | undefined;
+  redactionType: "HUMAN" | "AI" | "MIXED" | undefined;
+  priceWithoutRedaction: number | undefined;
+  priceWithRedaction: number | undefined;
+  additionnalPriceRedaction: number | undefined;
+  additionnalPriceCrypto: number | undefined;
+  additionnalPriceHealth: number | undefined;
+  additionnalPriceCBD: number | undefined;
+  additionnalPriceSex: number | undefined;
+  additionnalPriceFinance: number | undefined;
+  additionnalPriceCasino: number | undefined;
+  additionalPriceSponso: number | undefined;
+  additionalPriceDofollow: number | undefined;
+  pricePer100Words: number | undefined;
 };
 
 type SelectEditorProfileStepProps = {
   onContinue: (profile: Profile) => Promise<void>;
-  existingProfiles?: Profile[];
+  organization: any;
+  onBack?: () => void
 };
 
 // Sample default profile for new profile creation
@@ -82,48 +85,60 @@ const DEFAULT_PROFILE: Profile = {
   themes: [],
   languages: [],
   targetCountries: [],
-  linkType: 'DO_FOLLOW',
-  nbMaxLinksClient: 1,
-  nbMaxLinksExternal: 2,
-  nbWords: 500,
-  sponso: "NO_SPONSO",
-  isPrivate: false,
-  isGoogleNews: false,
-  validityDuration: "FOREVER",
-  category: "NOT_IMPOSED",
-  categoryUrl: null,
-  redactionType: "HUMAN",
-  priceWithoutRedaction: null,
-  priceWithRedaction: null,
-  additionnalPriceCrypto: null,
-  additionnalPriceHealth: null,
-  additionnalPriceCBD: null,
-  additionnalPriceSex: null,
-  additionnalPriceFinance: null,
-  additionnalPriceCasino: null,
-  additionalPriceSponso: null,
-  additionalPriceDofollow: null,
-  pricePer100Words: null
+  linkType:  undefined,
+  nbMaxLinksClient:  undefined,
+  nbMaxLinksExternal:  undefined,
+  nbWords: undefined,
+  sponso:  undefined,
+  isPrivate: undefined,
+  isGoogleNews: undefined,
+  validityDuration:  undefined,
+  category: undefined,
+  categoryUrl: undefined,
+  redactionType:  undefined,
+  priceWithoutRedaction: undefined,
+  priceWithRedaction: undefined,
+  additionnalPriceRedaction: undefined,
+  additionnalPriceCrypto: undefined,
+  additionnalPriceHealth: undefined,
+  additionnalPriceCBD: undefined,
+  additionnalPriceSex: undefined,
+  additionnalPriceFinance: undefined,
+  additionnalPriceCasino: undefined,
+  additionalPriceSponso: undefined,
+  additionalPriceDofollow: undefined,
+  pricePer100Words: undefined
 };
 
 // Helper function to format enum values for display
-const formatEnumValue = (value: string): string => {
-  return value
-    .split('_')
-    .map(word => word.charAt(0) + word.slice(1).toLowerCase())
-    .join(' ');
+const formatEnumValue = (value: string | undefined): any => {
+  if (value){
+    return value
+      .split('_')
+      .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+      .join(' ') ;
+  }else{
+    return undefined
+  }
+
 };
 
-export const SelectEditorProfileStep = ({ onContinue, existingProfiles = [] }: SelectEditorProfileStepProps) => {
+export const SelectEditorProfileStep = ({ onContinue ,organization,onBack}: SelectEditorProfileStepProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
-  const [profiles, setProfiles] = useState<Profile[]>(existingProfiles);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [newProfile, setNewProfile] = useState<Profile>({...DEFAULT_PROFILE});
   const [tempInput, setTempInput] = useState<string>('');
 
   const styles = useStyleConfig("UploadStep") as (typeof themeOverrides)["components"]["UploadStep"]["baseStyle"];
-  const { translations, fields } = useRsi();
+  const { getProfiles ,translations,saveProfiles  } = useRsi();
+
+  useEffect(() => {
+    getProfiles(organization.id).then((response)=>{
+      setProfiles(response.data.data)
+    });
+  },[])
 
   const handleContinue = useCallback(async () => {
     if (!selectedProfile) return;
@@ -148,10 +163,12 @@ export const SelectEditorProfileStep = ({ onContinue, existingProfiles = [] }: S
     // Add an ID and name if not provided
     const profileToAdd = {
       ...newProfile,
-      id: newProfile.id || `profile-${Date.now()}`,
+      organizationId: organization.id,
       name: newProfile.name || `Profile ${profiles.length + 1}`
     };
-
+    saveProfiles(organization.id,profileToAdd).then((response)=>{
+      alert(JSON.stringify(response))
+    })
     setProfiles(prev => [...prev, profileToAdd]);
     setSelectedProfile(profileToAdd);
     onClose();
@@ -195,6 +212,7 @@ export const SelectEditorProfileStep = ({ onContinue, existingProfiles = [] }: S
   };
 
   // @ts-ignore
+  // @ts-ignore
   return (
     <ModalBody>
       <Heading sx={styles.heading}>Choisir un profil d'import</Heading>
@@ -205,7 +223,7 @@ export const SelectEditorProfileStep = ({ onContinue, existingProfiles = [] }: S
         <VStack spacing={3} align="stretch" mb={6} maxHeight="300px" overflowY="auto">
           {profiles.map((profile, index) => (
             <Box
-              key={profile.id || index}
+              key={profile.id ?? index}
               p={4}
               mb={4}
               borderWidth="1px"
@@ -218,12 +236,12 @@ export const SelectEditorProfileStep = ({ onContinue, existingProfiles = [] }: S
               <Flex direction="column" gap={3}>
                 {/* Header with name and price */}
                 <Flex justify="space-between" align="center">
-                  <Heading size="md">{profile.name || `Profile ${index + 1}`}</Heading>
+                  <Heading size="md">{profile.name ?? `Profil ${index + 1}`}</Heading>
                   <HStack spacing={2}>
-                    {profile.priceWithoutRedaction !== null && (
+                    {profile.priceWithoutRedaction != null && (
                       <Text fontSize="sm" color="gray.500">Sans rédaction: {profile.priceWithoutRedaction}€</Text>
                     )}
-                    {profile.priceWithRedaction !== null && (
+                    {profile.priceWithRedaction != null && (
                       <Text fontWeight="bold" color="blue.500">Avec rédaction: {profile.priceWithRedaction}€</Text>
                     )}
                   </HStack>
@@ -232,22 +250,22 @@ export const SelectEditorProfileStep = ({ onContinue, existingProfiles = [] }: S
                 {/* Main badges row */}
                 <Flex wrap="wrap" gap={2}>
                   <Badge colorScheme={profile.isGoogleNews ? "green" : "gray"}>
-                    {profile.isGoogleNews ? "présent sur Google News" : "Non présent sur Google News"}
+                    {profile.isGoogleNews ? "Présent sur Google News" : "Non présent sur Google News"}
                   </Badge>
                   <Badge colorScheme={getLinkTypeBadgeColor(profile.linkType)}>
-                    {formatEnumValue(profile.linkType)}
+                    {formatEnumValue(profile.linkType) ?? "Non spécifié"}
                   </Badge>
                   <Badge colorScheme={getSponsoBadgeColor(profile.sponso)}>
-                    {formatEnumValue(profile.sponso)}
+                    {formatEnumValue(profile.sponso) ?? "Non spécifié"}
                   </Badge>
                   <Badge colorScheme={profile.isPrivate ? "red" : "gray"}>
                     {profile.isPrivate ? "Privé" : "Public"}
                   </Badge>
                   <Badge colorScheme="blue">
-                    {profile.nbWords} mots
+                    {profile.nbWords != null ? `${profile.nbWords} mots` : "Nombre de mots inconnu"}
                   </Badge>
                   <Badge colorScheme="purple">
-                    {formatEnumValue(profile.redactionType)}
+                    {formatEnumValue(profile.redactionType) ?? "Non spécifié"}
                   </Badge>
                 </Flex>
 
@@ -255,19 +273,19 @@ export const SelectEditorProfileStep = ({ onContinue, existingProfiles = [] }: S
                 <SimpleGrid columns={[1, 2, 3]} spacing={4}>
                   <Box>
                     <Text fontSize="sm" fontWeight="semibold">Liens</Text>
-                    <Text fontSize="sm">Client: max {profile.nbMaxLinksClient}</Text>
-                    <Text fontSize="sm">Externe: max {profile.nbMaxLinksExternal}</Text>
+                    <Text fontSize="sm">Client: max {profile.nbMaxLinksClient ?? "?"}</Text>
+                    <Text fontSize="sm">Externe: max {profile.nbMaxLinksExternal ?? "?"}</Text>
                   </Box>
                   <Box>
                     <Text fontSize="sm" fontWeight="semibold">Catégorie</Text>
-                    <Text fontSize="sm">{formatEnumValue(profile.category)}</Text>
+                    <Text fontSize="sm">{formatEnumValue(profile.category) ?? "Non spécifiée"}</Text>
                     {profile.categoryUrl && (
                       <Text fontSize="sm" noOfLines={1}>URL: {profile.categoryUrl}</Text>
                     )}
                   </Box>
                   <Box>
                     <Text fontSize="sm" fontWeight="semibold">Validité</Text>
-                    <Text fontSize="sm">{formatEnumValue(profile.validityDuration)}</Text>
+                    <Text fontSize="sm">{formatEnumValue(profile.validityDuration) ?? "Non spécifiée"}</Text>
                   </Box>
                 </SimpleGrid>
 
@@ -277,8 +295,8 @@ export const SelectEditorProfileStep = ({ onContinue, existingProfiles = [] }: S
                     <Box key={field}>
                       <Text fontSize="sm" fontWeight="semibold">{formatEnumValue(field)}</Text>
                       <Flex flexWrap="wrap" gap={1} mt={1}>
-                        {profile[field].length > 0 ? (
-                          profile[field].map((item, i) => (
+                        {Array.isArray(profile[field]) && profile[field].length > 0 ? (
+                          profile[field].map((item: string, i: number) => (
                             <Tag size="sm" key={i} colorScheme="gray">
                               {item}
                             </Tag>
@@ -292,43 +310,43 @@ export const SelectEditorProfileStep = ({ onContinue, existingProfiles = [] }: S
                 </SimpleGrid>
 
                 {/* Additional pricing section */}
-                {(profile.additionnalPriceCrypto !== null ||
-                  profile.additionnalPriceHealth !== null ||
-                  profile.additionnalPriceCBD !== null ||
-                  profile.additionnalPriceSex !== null ||
-                  profile.additionnalPriceFinance !== null ||
-                  profile.additionnalPriceCasino !== null ||
-                  profile.additionalPriceSponso !== null ||
-                  profile.additionalPriceDofollow !== null ||
-                  profile.pricePer100Words !== null) && (
+                {(profile.pricePer100Words != null ||
+                  profile.additionnalPriceCrypto != null ||
+                  profile.additionnalPriceHealth != null ||
+                  profile.additionnalPriceCBD != null ||
+                  profile.additionnalPriceSex != null ||
+                  profile.additionnalPriceFinance != null ||
+                  profile.additionnalPriceCasino != null ||
+                  profile.additionalPriceSponso != null ||
+                  profile.additionalPriceDofollow != null) && (
                   <Box>
                     <Text fontSize="sm" fontWeight="semibold">Tarifs additionnels</Text>
                     <SimpleGrid columns={[2, 3, 4]} spacing={2}>
-                      {profile.pricePer100Words !== null && (
+                      {profile.pricePer100Words != null && (
                         <Text fontSize="xs">100 mots: {profile.pricePer100Words}€</Text>
                       )}
-                      {profile.additionnalPriceCrypto !== null && (
+                      {profile.additionnalPriceCrypto != null && (
                         <Text fontSize="xs">Crypto: +{profile.additionnalPriceCrypto}€</Text>
                       )}
-                      {profile.additionnalPriceHealth !== null && (
+                      {profile.additionnalPriceHealth != null && (
                         <Text fontSize="xs">Santé: +{profile.additionnalPriceHealth}€</Text>
                       )}
-                      {profile.additionnalPriceCBD !== null && (
+                      {profile.additionnalPriceCBD != null && (
                         <Text fontSize="xs">CBD: +{profile.additionnalPriceCBD}€</Text>
                       )}
-                      {profile.additionnalPriceSex !== null && (
+                      {profile.additionnalPriceSex != null && (
                         <Text fontSize="xs">Sexe: +{profile.additionnalPriceSex}€</Text>
                       )}
-                      {profile.additionnalPriceFinance !== null && (
+                      {profile.additionnalPriceFinance != null && (
                         <Text fontSize="xs">Finance: +{profile.additionnalPriceFinance}€</Text>
                       )}
-                      {profile.additionnalPriceCasino !== null && (
+                      {profile.additionnalPriceCasino != null && (
                         <Text fontSize="xs">Casino: +{profile.additionnalPriceCasino}€</Text>
                       )}
-                      {profile.additionalPriceSponso !== null && (
+                      {profile.additionalPriceSponso != null && (
                         <Text fontSize="xs">Sponsorisé: +{profile.additionalPriceSponso}€</Text>
                       )}
-                      {profile.additionalPriceDofollow !== null && (
+                      {profile.additionalPriceDofollow != null && (
                         <Text fontSize="xs">Dofollow: +{profile.additionalPriceDofollow}€</Text>
                       )}
                     </SimpleGrid>
@@ -337,6 +355,7 @@ export const SelectEditorProfileStep = ({ onContinue, existingProfiles = [] }: S
               </Flex>
             </Box>
           ))}
+
         </VStack>
       )}
 
@@ -350,381 +369,402 @@ export const SelectEditorProfileStep = ({ onContinue, existingProfiles = [] }: S
           title="Continuer avec ce profil"
           backTitle={translations.selectHeaderStep.backButtonTitle}
           isLoading={isLoading}
+          onBack={onBack}
           disabled={!selectedProfile}
         />
       </Flex>
 
       {/* Create Profile Modal */}
-      <Modal isOpen={isOpen} onClose={onClose} size="xl">
+      <Modal isOpen={isOpen} onClose={onClose} size="6xl">
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent >
           <ModalHeader>Créer un nouveau profil</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Tabs isFitted variant="enclosed">
-              <TabList mb="1em">
-                <Tab>Général</Tab>
-                <Tab>Prix</Tab>
-                <Tab>Contenu</Tab>
-              </TabList>
-              <TabPanels>
-                <TabPanel>
-                  <VStack spacing={4} align="stretch">
-                    <FormControl>
-                      <FormLabel>Nom du profil</FormLabel>
-                      <Input
-                        value={newProfile.name || ''}
-                        onChange={(e) => handleInputChange('name', e.target.value)}
-                        placeholder="Mon profile SEO"
+           <div style={{display:"flex",gap:"24px"}}>
+            <Box mb={6}>
+              <Heading size="md" mb={4}>Informations Générales</Heading>
+              <SimpleGrid columns={[1, null, 2]} spacing={4}>
+                <FormControl>
+                  <FormLabel>Nom du profil</FormLabel>
+                  <Input
+                    value={newProfile.name || ''}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    placeholder="Mon profile SEO"
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Durée de validité</FormLabel>
+                  <Select
+                    value={newProfile.validityDuration ?? ""}
+                    onChange={(e) => handleInputChange('validityDuration', e.target.value as Profile['validityDuration'])}
+                  >
+                    <option value="" disabled hidden>Choisir...</option>
+                    <option value="FOREVER">Pour toujours</option>
+                    <option value="SIX_MONTHS">6 mois</option>
+                    <option value="TWELVE_MONTHS">12 mois</option>
+                    <option value="TWENTY_FOUR_MONTHS">24 mois</option>
+                  </Select>
+                </FormControl>
+
+                <FormControl gridColumn={[null, null, "span 2"]}>
+                  <FormLabel>Thèmes</FormLabel>
+                  <Flex mb={2} wrap="wrap">
+                    {newProfile.themes.map((theme, index) => (
+                      <Tag size="md" key={index} borderRadius="full" variant="solid" colorScheme="blue" m={1}>
+                        <TagLabel>{theme}</TagLabel>
+                        <TagCloseButton onClick={() => removeItem('themes', index)} />
+                      </Tag>
+                    ))}
+                  </Flex>
+                  <InputGroup>
+                    <Input
+                      value={tempInput}
+                      onChange={(e) => setTempInput(e.target.value)}
+                      placeholder="Ajouter un thème"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addItem('themes');
+                        }
+                      }}
+                    />
+                    <InputRightAddon>
+                      <Button size="sm" onClick={() => addItem('themes')}>+</Button>
+                    </InputRightAddon>
+                  </InputGroup>
+                </FormControl>
+
+                <FormControl gridColumn={[null, null, "span 2"]}>
+                  <FormLabel>Langues</FormLabel>
+                  <Flex mb={2} wrap="wrap">
+                    {newProfile?.languages.map((lang, index) => (
+                      <Tag size="md" key={index} borderRadius="full" variant="solid" colorScheme="green" m={1}>
+                        <TagLabel>{lang}</TagLabel>
+                        <TagCloseButton onClick={() => removeItem('languages', index)} />
+                      </Tag>
+                    ))}
+                  </Flex>
+                  <InputGroup>
+                    <Input
+                      value={tempInput}
+                      onChange={(e) => setTempInput(e.target.value)}
+                      placeholder="Ajouter une langue"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addItem('languages');
+                        }
+                      }}
+                    />
+                    <InputRightAddon>
+                      <Button size="sm" onClick={() => addItem('languages')}>+</Button>
+                    </InputRightAddon>
+                  </InputGroup>
+                </FormControl>
+
+                <FormControl gridColumn={[null, null, "span 2"]}>
+                  <FormLabel>Pays cibles</FormLabel>
+                  <Flex mb={2} wrap="wrap">
+                    {newProfile.targetCountries.map((country, index) => (
+                      <Tag size="md" key={index} borderRadius="full" variant="solid" colorScheme="purple" m={1}>
+                        <TagLabel>{country}</TagLabel>
+                        <TagCloseButton onClick={() => removeItem('targetCountries', index)} />
+                      </Tag>
+                    ))}
+                  </Flex>
+                  <InputGroup>
+                    <Input
+                      value={tempInput}
+                      onChange={(e) => setTempInput(e.target.value)}
+                      placeholder="Ajouter un pays"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addItem('targetCountries');
+                        }
+                      }}
+                    />
+                    <InputRightAddon>
+                      <Button size="sm" onClick={() => addItem('targetCountries')}>+</Button>
+                    </InputRightAddon>
+                  </InputGroup>
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Catégorie</FormLabel>
+                  <Select
+                    value={newProfile.category ?? ""}
+                    onChange={(e) => handleInputChange('category', e.target.value as Profile['category'])}
+                  >
+                    <option value="" disabled hidden>Choisir...</option>
+                    <option value="IMPOSED">Imposée</option>
+                    <option value="IMPOSED_CATEGORY">Catégorie imposée</option>
+                    <option value="NOT_IMPOSED">Non imposée</option>
+                  </Select>
+                </FormControl>
+
+                {(newProfile.category === "IMPOSED" || newProfile.category === "IMPOSED_CATEGORY") && (
+                  <FormControl>
+                    <FormLabel>URL de la catégorie</FormLabel>
+                    <Input
+                      value={newProfile.categoryUrl || ''}
+                      onChange={(e) => handleInputChange('categoryUrl', e.target.value)}
+                    />
+                  </FormControl>
+                )}
+
+                <SimpleGrid columns={2} spacing={4} gridColumn={[null, null, "span 2"]}>
+                  <FormControl>
+                    <FormLabel>Catalogue privé ?</FormLabel>
+                    <Select
+                      value={newProfile.isPrivate === undefined ? "" : String(newProfile.isPrivate)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        handleInputChange('isPrivate', value === "" ? undefined : value === "true");
+                      }}
+                    >
+                      <option value="" disabled hidden>Choisir...</option>
+                      <option value="true">Oui</option>
+                      <option value="false">Non</option>
+                    </Select>
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Google News ?</FormLabel>
+                    <Select
+                      value={newProfile.isGoogleNews === undefined ? "" : String(newProfile.isGoogleNews)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        handleInputChange('isGoogleNews', value === "" ? undefined : value === "true");
+                      }}
+                    >
+                      <option value="" disabled hidden>Choisir...</option>
+                      <option value="true">Oui</option>
+                      <option value="false">Non</option>
+                    </Select>
+                  </FormControl>
+                </SimpleGrid>
+              </SimpleGrid>
+            </Box>
+
+
+            {/* Pricing Section */}
+            <Box mb={6}>
+              <Heading size="md" mb={4}>Prix</Heading>
+              <SimpleGrid columns={[1, null, 2]} spacing={4}>
+                <FormControl>
+                  <FormLabel>Prix sans rédaction</FormLabel>
+                  <InputGroup>
+                    <NumberInput min={0} value={newProfile.priceWithoutRedaction || ''} width="100%">
+                      <NumberInputField
+                        onChange={(e) => handleInputChange('priceWithoutRedaction', e.target.value === '' ? null : parseFloat(e.target.value))}
                       />
-                    </FormControl>
+                    </NumberInput>
+                    <InputRightAddon children="€" />
+                  </InputGroup>
+                </FormControl>
 
-                    <FormControl>
-                      <FormLabel>Durée de validité</FormLabel>
-                      <Select
-                        value={newProfile.validityDuration}
-                        onChange={(e) => handleInputChange('validityDuration', e.target.value as Profile['validityDuration'])}
-                      >
-                        <option value="FOREVER">Pour toujours</option>
-                        <option value="SIX_MONTHS">6 mois</option>
-                        <option value="TWELVE_MONTHS">12 mois</option>
-                        <option value="TWENTY_FOUR_MONTHS">24 mois</option>
-                      </Select>
-                    </FormControl>
-                    <FormControl>
-                      <FormLabel>Thèmes</FormLabel>
-                      <Flex mb={2} wrap="wrap">
-                        {newProfile.themes.map((theme, index) => (
-                          <Tag size="md" key={index} borderRadius="full" variant="solid" colorScheme="blue" m={1}>
-                            <TagLabel>{theme}</TagLabel>
-                            <TagCloseButton onClick={() => removeItem('themes', index)} />
-                          </Tag>
-                        ))}
-                      </Flex>
-                      <InputGroup>
-                        <Input
-                          value={tempInput}
-                          onChange={(e) => setTempInput(e.target.value)}
-                          placeholder="Ajouter un thème"
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              addItem('themes');
-                            }
-                          }}
-                        />
-                        <InputRightAddon>
-                          <Button size="sm" onClick={() => addItem('themes')}>+</Button>
-                        </InputRightAddon>
-                      </InputGroup>
-                    </FormControl>
+                <FormControl>
+                  <FormLabel>Prix avec rédaction</FormLabel>
+                  <InputGroup>
+                    <NumberInput min={0} value={newProfile.priceWithRedaction || ''} width="100%">
+                      <NumberInputField
+                        onChange={(e) => handleInputChange('priceWithRedaction', e.target.value === '' ? null : parseFloat(e.target.value))}
+                      />
+                    </NumberInput>
+                    <InputRightAddon children="€" />
+                  </InputGroup>
+                </FormControl>
 
-                    <FormControl>
-                      <FormLabel>Langues</FormLabel>
-                      <Flex mb={2} wrap="wrap">
-                        {newProfile.languages.map((lang, index) => (
-                          <Tag size="md" key={index} borderRadius="full" variant="solid" colorScheme="green" m={1}>
-                            <TagLabel>{lang}</TagLabel>
-                            <TagCloseButton onClick={() => removeItem('languages', index)} />
-                          </Tag>
-                        ))}
-                      </Flex>
-                      <InputGroup>
-                        <Input
-                          value={tempInput}
-                          onChange={(e) => setTempInput(e.target.value)}
-                          placeholder="Ajouter une langue"
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              addItem('languages');
-                            }
-                          }}
-                        />
-                        <InputRightAddon>
-                          <Button size="sm" onClick={() => addItem('languages')}>+</Button>
-                        </InputRightAddon>
-                      </InputGroup>
-                    </FormControl>
+                <FormControl>
+                  <FormLabel>Prix pour 100 mots supplémentaires</FormLabel>
+                  <InputGroup>
+                    <NumberInput min={0} value={newProfile.pricePer100Words || ''} width="100%">
+                      <NumberInputField
+                        onChange={(e) => handleInputChange('pricePer100Words', e.target.value === '' ? null : parseFloat(e.target.value))}
+                      />
+                    </NumberInput>
+                    <InputRightAddon children="€" />
+                  </InputGroup>
+                </FormControl>
 
-                    <FormControl>
-                      <FormLabel>Pays cibles</FormLabel>
-                      <Flex mb={2} wrap="wrap">
-                        {newProfile.targetCountries.map((country, index) => (
-                          <Tag size="md" key={index} borderRadius="full" variant="solid" colorScheme="purple" m={1}>
-                            <TagLabel>{country}</TagLabel>
-                            <TagCloseButton onClick={() => removeItem('targetCountries', index)} />
-                          </Tag>
-                        ))}
-                      </Flex>
-                      <InputGroup>
-                        <Input
-                          value={tempInput}
-                          onChange={(e) => setTempInput(e.target.value)}
-                          placeholder="Ajouter un pays"
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              addItem('targetCountries');
-                            }
-                          }}
-                        />
-                        <InputRightAddon>
-                          <Button size="sm" onClick={() => addItem('targetCountries')}>+</Button>
-                        </InputRightAddon>
-                      </InputGroup>
-                    </FormControl>
+                <Box gridColumn={[null, null, "span 2"]}>
+                  <Heading size="sm" my={3}>Prix additionnels par niche</Heading>
+                </Box>
+
+                <FormControl>
+                  <FormLabel>Crypto</FormLabel>
+                  <InputGroup>
+                    <NumberInput min={0} value={newProfile.additionnalPriceCrypto || ''} width="100%">
+                      <NumberInputField
+                        onChange={(e) => handleInputChange('additionnalPriceCrypto', e.target.value === '' ? null : parseFloat(e.target.value))}
+                      />
+                    </NumberInput>
+                    <InputRightAddon children="€" />
+                  </InputGroup>
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Santé</FormLabel>
+                  <InputGroup>
+                    <NumberInput min={0} value={newProfile.additionnalPriceHealth || ''} width="100%">
+                      <NumberInputField
+                        onChange={(e) => handleInputChange('additionnalPriceHealth', e.target.value === '' ? null : parseFloat(e.target.value))}
+                      />
+                    </NumberInput>
+                    <InputRightAddon children="€" />
+                  </InputGroup>
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>CBD</FormLabel>
+                  <InputGroup>
+                    <NumberInput min={0} value={newProfile.additionnalPriceCBD || ''} width="100%">
+                      <NumberInputField
+                        onChange={(e) => handleInputChange('additionnalPriceCBD', e.target.value === '' ? null : parseFloat(e.target.value))}
+                      />
+                    </NumberInput>
+                    <InputRightAddon children="€" />
+                  </InputGroup>
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Casino</FormLabel>
+                  <InputGroup>
+                    <NumberInput min={0} value={newProfile.additionnalPriceCasino || ''} width="100%">
+                      <NumberInputField
+                        onChange={(e) => handleInputChange('additionnalPriceCasino', e.target.value === '' ? null : parseFloat(e.target.value))}
+                      />
+                    </NumberInput>
+                    <InputRightAddon children="€" />
+                  </InputGroup>
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Finance</FormLabel>
+                  <InputGroup>
+                    <NumberInput min={0} value={newProfile.additionnalPriceFinance || ''} width="100%">
+                      <NumberInputField
+                        onChange={(e) => handleInputChange('additionnalPriceFinance', e.target.value === '' ? null : parseFloat(e.target.value))}
+                      />
+                    </NumberInput>
+                    <InputRightAddon children="€" />
+                  </InputGroup>
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Sexe</FormLabel>
+                  <InputGroup>
+                    <NumberInput min={0} value={newProfile.additionnalPriceSex || ''} width="100%">
+                      <NumberInputField
+                        onChange={(e) => handleInputChange('additionnalPriceSex', e.target.value === '' ? null : parseFloat(e.target.value))}
+                      />
+                    </NumberInput>
+                    <InputRightAddon children="€" />
+                  </InputGroup>
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Prix additionnel pour sponsored</FormLabel>
+                  <InputGroup>
+                    <NumberInput min={0} value={newProfile.additionalPriceSponso || ''} width="100%">
+                      <NumberInputField
+                        onChange={(e) => handleInputChange('additionalPriceSponso', e.target.value === '' ? null : parseFloat(e.target.value))}
+                      />
+                    </NumberInput>
+                    <InputRightAddon children="€" />
+                  </InputGroup>
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Prix additionnel pour dofollow</FormLabel>
+                  <InputGroup>
+                    <NumberInput min={0} value={newProfile.additionalPriceDofollow || ''} width="100%">
+                      <NumberInputField
+                        onChange={(e) => handleInputChange('additionalPriceDofollow', e.target.value === '' ? null : parseFloat(e.target.value))}
+                      />
+                    </NumberInput>
+                    <InputRightAddon children="€" />
+                  </InputGroup>
+                </FormControl>
+              </SimpleGrid>
+            </Box>
 
 
-                    <FormControl>
-                      <FormLabel>Catégorie</FormLabel>
-                      <Select
-                        value={newProfile.category}
-                        onChange={(e) => handleInputChange('category', e.target.value as Profile['category'])}
-                      >
-                        <option value="IMPOSED">Imposée</option>
-                        <option value="IMPOSED_CATEGORY">Catégorie imposée</option>
-                        <option value="NOT_IMPOSED">Non imposée</option>
-                      </Select>
-                    </FormControl>
+            {/* Content Section */}
+            <Box>
+              <Heading size="md" mb={4}>Contenu</Heading>
+              <SimpleGrid columns={[1, null, 2]} spacing={4}>
+                <FormControl>
+                  <FormLabel>Nombre de mots</FormLabel>
+                  <NumberInput min={1} value={newProfile.nbWords}>
+                    <NumberInputField
+                      onChange={(e) => handleInputChange('nbWords', parseInt(e.target.value) || 500)}
+                    />
+                  </NumberInput>
+                </FormControl>
 
-                    {(newProfile.category === "IMPOSED" || newProfile.category === "IMPOSED_CATEGORY") && (
-                      <FormControl>
-                        <FormLabel>URL de la catégorie</FormLabel>
-                        <Input
-                          value={newProfile.categoryUrl || ''}
-                          onChange={(e) => handleInputChange('categoryUrl', e.target.value)}
-                        />
-                      </FormControl>
-                    )}
+                <FormControl>
+                  <FormLabel>Type de rédaction</FormLabel>
+                  <Select
+                    value={newProfile.redactionType ?? ""}
+                    onChange={(e) => handleInputChange('redactionType', e.target.value as Profile['redactionType'])}
+                  >
+                    <option value="" disabled hidden>Choisir...</option>
+                    <option value="HUMAN">Humain</option>
+                    <option value="AI">IA</option>
+                    <option value="MIXED">Mixte</option>
+                  </Select>
+                </FormControl>
 
-                    <Flex justify="space-between">
-                      <FormControl display="flex" alignItems="center">
-                        <FormLabel mb="0">Catalogue privé</FormLabel>
-                        <Switch
-                          isChecked={newProfile.isPrivate}
-                          onChange={(e) => handleInputChange('isPrivate', e.target.checked)}
-                        />
-                      </FormControl>
+                <FormControl>
+                  <FormLabel>Nombre max. de liens client</FormLabel>
+                  <NumberInput min={0} value={newProfile.nbMaxLinksClient}>
+                    <NumberInputField
+                      onChange={(e) => handleInputChange('nbMaxLinksClient', parseInt(e.target.value) || 0)}
+                    />
+                  </NumberInput>
+                </FormControl>
 
-                      <FormControl display="flex" alignItems="center">
-                        <FormLabel mb="0">Présent sur Google News ?</FormLabel>
-                        <Switch
-                          isChecked={newProfile.isGoogleNews}
-                          onChange={(e) => handleInputChange('isGoogleNews', e.target.checked)}
-                        />
-                      </FormControl>
-                    </Flex>
-                  </VStack>
-                </TabPanel>
+                <FormControl>
+                  <FormLabel>Nombre max. de liens externes</FormLabel>
+                  <NumberInput min={0} value={newProfile.nbMaxLinksExternal}>
+                    <NumberInputField
+                      onChange={(e) => handleInputChange('nbMaxLinksExternal', parseInt(e.target.value) || 0)}
+                    />
+                  </NumberInput>
+                </FormControl>
 
-                <TabPanel>
-                  <VStack spacing={4} align="stretch">
-                    <FormControl>
-                      <FormLabel>Prix sans rédaction</FormLabel>
-                      <InputGroup>
-                        <NumberInput min={0} value={newProfile.priceWithoutRedaction || ''} width="100%">
-                          <NumberInputField
-                            onChange={(e) => handleInputChange('priceWithoutRedaction', e.target.value === '' ? null : parseFloat(e.target.value))}
-                          />
-                        </NumberInput>
-                        <InputRightAddon children="€" />
-                      </InputGroup>
-                    </FormControl>
+                <FormControl>
+                  <FormLabel>Type de lien</FormLabel>
+                  <Select
+                    value={newProfile.linkType ?? ""}
+                    onChange={(e) => handleInputChange('linkType', e.target.value as Profile['linkType'])}
+                  >
+                    <option value="" disabled hidden>Choisir...</option>
+                    <option value="DO_FOLLOW">Do Follow</option>
+                    <option value="NO_FOLLOW">No Follow</option>
+                    <option value="BOTH">Les deux</option>
+                  </Select>
+                </FormControl>
 
-                    <FormControl>
-                      <FormLabel>Prix avec rédaction</FormLabel>
-                      <InputGroup>
-                        <NumberInput min={0} value={newProfile.priceWithRedaction || ''} width="100%">
-                          <NumberInputField
-                            onChange={(e) => handleInputChange('priceWithRedaction', e.target.value === '' ? null : parseFloat(e.target.value))}
-                          />
-                        </NumberInput>
-                        <InputRightAddon children="€" />
-                      </InputGroup>
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel>Prix pour 100 mots supplémentaires</FormLabel>
-                      <InputGroup>
-                        <NumberInput min={0} value={newProfile.pricePer100Words || ''} width="100%">
-                          <NumberInputField
-                            onChange={(e) => handleInputChange('pricePer100Words', e.target.value === '' ? null : parseFloat(e.target.value))}
-                          />
-                        </NumberInput>
-                        <InputRightAddon children="€" />
-                      </InputGroup>
-                    </FormControl>
-
-                    <Divider my={2} />
-                    <Heading size="sm" mb={2}>Prix additionnels par niche</Heading>
-
-                    <FormControl>
-                      <FormLabel>Crypto</FormLabel>
-                      <InputGroup>
-                        <NumberInput min={0} value={newProfile.additionnalPriceCrypto || ''} width="100%">
-                          <NumberInputField
-                            onChange={(e) => handleInputChange('additionnalPriceCrypto', e.target.value === '' ? null : parseFloat(e.target.value))}
-                          />
-                        </NumberInput>
-                        <InputRightAddon children="€" />
-                      </InputGroup>
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel>Santé</FormLabel>
-                      <InputGroup>
-                        <NumberInput min={0} value={newProfile.additionnalPriceHealth || ''} width="100%">
-                          <NumberInputField
-                            onChange={(e) => handleInputChange('additionnalPriceHealth', e.target.value === '' ? null : parseFloat(e.target.value))}
-                          />
-                        </NumberInput>
-                        <InputRightAddon children="€" />
-                      </InputGroup>
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel>CBD</FormLabel>
-                      <InputGroup>
-                        <NumberInput min={0} value={newProfile.additionnalPriceCBD || ''} width="100%">
-                          <NumberInputField
-                            onChange={(e) => handleInputChange('additionnalPriceCBD', e.target.value === '' ? null : parseFloat(e.target.value))}
-                          />
-                        </NumberInput>
-                        <InputRightAddon children="€" />
-                      </InputGroup>
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel>Casino</FormLabel>
-                      <InputGroup>
-                        <NumberInput min={0} value={newProfile.additionnalPriceCasino || ''} width="100%">
-                          <NumberInputField
-                            onChange={(e) => handleInputChange('additionnalPriceCasino', e.target.value === '' ? null : parseFloat(e.target.value))}
-                          />
-                        </NumberInput>
-                        <InputRightAddon children="€" />
-                      </InputGroup>
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel>Finance</FormLabel>
-                      <InputGroup>
-                        <NumberInput min={0} value={newProfile.additionnalPriceFinance || ''} width="100%">
-                          <NumberInputField
-                            onChange={(e) => handleInputChange('additionnalPriceFinance', e.target.value === '' ? null : parseFloat(e.target.value))}
-                          />
-                        </NumberInput>
-                        <InputRightAddon children="€" />
-                      </InputGroup>
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel>Sexe</FormLabel>
-                      <InputGroup>
-                        <NumberInput min={0} value={newProfile.additionnalPriceSex || ''} width="100%">
-                          <NumberInputField
-                            onChange={(e) => handleInputChange('additionnalPriceSex', e.target.value === '' ? null : parseFloat(e.target.value))}
-                          />
-                        </NumberInput>
-                        <InputRightAddon children="€" />
-                      </InputGroup>
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel>Prix additionnel pour sponsored</FormLabel>
-                      <InputGroup>
-                        <NumberInput min={0} value={newProfile.additionalPriceSponso || ''} width="100%">
-                          <NumberInputField
-                            onChange={(e) => handleInputChange('additionalPriceSponso', e.target.value === '' ? null : parseFloat(e.target.value))}
-                          />
-                        </NumberInput>
-                        <InputRightAddon children="€" />
-                      </InputGroup>
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel>Prix additionnel pour dofollow</FormLabel>
-                      <InputGroup>
-                        <NumberInput min={0} value={newProfile.additionalPriceDofollow || ''} width="100%">
-                          <NumberInputField
-                            onChange={(e) => handleInputChange('additionalPriceDofollow', e.target.value === '' ? null : parseFloat(e.target.value))}
-                          />
-                        </NumberInput>
-                        <InputRightAddon children="€" />
-                      </InputGroup>
-                    </FormControl>
-                  </VStack>
-                </TabPanel>
-
-                <TabPanel>
-                  <VStack spacing={4} align="stretch">
-                    <FormControl>
-                      <FormLabel>Nombre de mots</FormLabel>
-                      <NumberInput min={1} value={newProfile.nbWords}>
-                        <NumberInputField
-                          onChange={(e) => handleInputChange('nbWords', parseInt(e.target.value) || 500)}
-                        />
-                      </NumberInput>
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel>Type de rédaction</FormLabel>
-                      <Select
-                        value={newProfile.redactionType}
-                        onChange={(e) => handleInputChange('redactionType', e.target.value as Profile['redactionType'])}
-                      >
-                        <option value="HUMAN">Humain</option>
-                        <option value="AI">IA</option>
-                        <option value="MIXED">Mixte</option>
-                      </Select>
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel>Nombre max. de liens client</FormLabel>
-                      <NumberInput min={0} value={newProfile.nbMaxLinksClient}>
-                        <NumberInputField
-                          onChange={(e) => handleInputChange('nbMaxLinksClient', parseInt(e.target.value) || 0)}
-                        />
-                      </NumberInput>
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel>Nombre max. de liens externes</FormLabel>
-                      <NumberInput min={0} value={newProfile.nbMaxLinksExternal}>
-                        <NumberInputField
-                          onChange={(e) => handleInputChange('nbMaxLinksExternal', parseInt(e.target.value) || 0)}
-                        />
-                      </NumberInput>
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel>Type de lien</FormLabel>
-                      <Select
-                        value={newProfile.linkType}
-                        onChange={(e) => handleInputChange('linkType', e.target.value as Profile['linkType'])}
-                      >
-                        <option value="DO_FOLLOW">Do Follow</option>
-                        <option value="NO_FOLLOW">No Follow</option>
-                        <option value="BOTH">Les deux</option>
-                      </Select>
-                    </FormControl>
-                    <FormControl>
-                      <FormLabel>Mention sponsorisé</FormLabel>
-                      <Select
-                        value={newProfile.sponso}
-                        onChange={(e) => handleInputChange('sponso', e.target.value as Profile['sponso'])}
-                      >
-                        <option value="SPONSO">Sponsorisé</option>
-                        <option value="NO_SPONSO">Non sponsorisé</option>
-                        <option value="BOTH">Les deux</option>
-                      </Select>
-                    </FormControl>
-
-                  </VStack>
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
+                <FormControl>
+                  <FormLabel>Mention sponsorisé</FormLabel>
+                  <Select
+                    value={newProfile.sponso ?? ""}
+                    onChange={(e) => handleInputChange('sponso', e.target.value as Profile['sponso'])}
+                  >
+                    <option value="" disabled hidden>Choisir...</option>
+                    <option value="SPONSO">Sponsorisé</option>
+                    <option value="NO_SPONSO">Non sponsorisé</option>
+                    <option value="BOTH">Les deux</option>
+                  </Select>
+                </FormControl>
+              </SimpleGrid>
+            </Box>
+           </div>
           </ModalBody>
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={onClose}>

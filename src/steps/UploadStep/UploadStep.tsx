@@ -6,9 +6,11 @@ import { ExampleTable } from "./components/ExampleTable"
 import { useCallback, useState } from "react"
 import { FadingOverlay } from "./components/FadingOverlay"
 import type { themeOverrides } from "../../theme"
+import { ContinueButton } from "../../components/ContinueButton"
 
 type UploadProps = {
   onContinue: (data: XLSX.WorkBook, file: File) => Promise<void>
+  onBack?: () => void
 }
 
 export const UploadStep = ({ onContinue }: UploadProps) => {
@@ -34,5 +36,6 @@ export const UploadStep = ({ onContinue }: UploadProps) => {
       </Box>
       <DropZone onContinue={handleOnContinue} isLoading={isLoading} />
     </ModalBody>
+
   )
 }

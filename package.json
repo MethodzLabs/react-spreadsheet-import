@@ -57,6 +57,7 @@
     "@chakra-ui/react": "^2.8.1",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
+    "axios": "^1.8.4",
     "chakra-react-select": "^4.7.5",
     "chakra-ui-steps": "2.0.4",
     "framer-motion": "^10.16.4",

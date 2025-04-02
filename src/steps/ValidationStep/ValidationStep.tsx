@@ -10,14 +10,16 @@ import { SubmitDataAlert } from "../../components/Alerts/SubmitDataAlert"
 import type { Data } from "../../types"
 import type { themeOverrides } from "../../theme"
 import type { RowsChangeData } from "react-data-grid"
+import { Profile } from "../SelectEditorProfileStep/SelectEditorProfileStep"
 
 type Props<T extends string> = {
   initialData: (Data<T> & Meta)[]
   file: File
   onBack?: () => void
+  profile: any
 }
 
-export const ValidationStep = <T extends string>({ initialData, file, onBack }: Props<T>) => {
+export const ValidationStep = <T extends string>({ initialData, file, onBack , profile}: Props<T>) => {
   const { translations, fields, onClose, onSubmit, rowHook, tableHook } = useRsi<T>()
   const styles = useStyleConfig(
     "ValidationStep",
@@ -68,15 +70,23 @@ export const ValidationStep = <T extends string>({ initialData, file, onBack }: 
   const columns = useMemo(() => generateColumns(fields), [fields])
 
   const tableData = useMemo(() => {
+    console.log(data)
+    const profileData = data.map((value) => {
+      return {
+        ...value,
+        ...Object.fromEntries(Object.entries(value).map(([k, v]) => [k, v ?? profile[k]]))
+      };
+    });
+    console.log(profileData)
     if (filterByErrors) {
-      return data.filter((value) => {
+      return profileData.filter((value) => {
         if (value?.__errors) {
           return Object.values(value.__errors)?.filter((err) => err.level === "error").length
         }
         return false
       })
     }
-    return data
+    return profileData
   }, [data, filterByErrors])
 
   const rowKeyGetter = useCallback((row: Data<T> & Meta) => row.__index, [])

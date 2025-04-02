@@ -1,5 +1,6 @@
 import type { RsiProps } from "../types"
 import { defaultRSIProps } from "../ReactSpreadsheetImport"
+import axios from "axios"
 
 const fields = [
   {
@@ -419,7 +420,7 @@ const fields = [
   },  {
     label: "Type de lien",
     key: "linkType",
-    alternateMatches: ["do follow"],
+    alternateMatches: ["Type de lien "],
     fieldType: {
       type: "select",
       options: [
@@ -428,6 +429,25 @@ const fields = [
       ],
     },
     example: "Lien en \"doFollow\"",
+    validations: [
+      {
+        rule: "required",
+        errorMessage: "Team is required",
+      },
+    ],
+  },  {
+    label: "Type de redaction",
+    key: "redactionType",
+    alternateMatches: ["Type de redaction"],
+    fieldType: {
+      type: "select",
+      options: [
+        { label: "Humaine", value: "HUMAN" },
+        { label: "IA", value: "AI" },
+        { label: "Mixte", value: "MIXED" },
+      ],
+    },
+    example: "Humaine",
     validations: [
       {
         rule: "required",
@@ -445,11 +465,10 @@ const fields = [
     example: "2",
     validations: [
       {
-        rule: "unique",
-        errorMessage: "Last name must be unique",
-        level: "info",
+        rule: "required",
+        errorMessage: "Team is required",
       },
-    ]
+    ],
   },
   {
     label: "Nombre max de liens vers client",
@@ -461,21 +480,20 @@ const fields = [
     example: "2",
     validations: [
       {
-        rule: "unique",
-        errorMessage: "Last name must be unique",
-        level: "info",
+        rule: "required",
+        errorMessage: "Team is required",
       },
-    ]
+    ],
   },  {
     label: "Mention sponso",
     key: "sponso",
-    alternateMatches: ["do follow"],
+    alternateMatches: ["qsd"],
     fieldType: {
       type: "select",
       options: [
-        { label: "Obligatoire", value: "one" },
-        { label: "Non obligatoire", value: "one" },
-        { label: "Les deux", value: "one" },
+        { label: "Obligatoire", value: "MANDATORY" },
+        { label: "Non obligatoire", value: "NON_MANDATORY" },
+        { label: "Les deux", value: "BOTH" },
       ],
     },
     example: "Obligatoire",
@@ -485,7 +503,26 @@ const fields = [
         errorMessage: "Team is required",
       },
     ],
+  },  {
+    label: "Catalogue privé",
+    key: "privateCatalog",
+    alternateMatches: ["do follow"],
+    fieldType: {
+      type: "select",
+      options: [
+        { label: "Oui", value: "true" },
+        { label: "Non", value: "false" },
+      ],
+    },
+    example: "oui",
+    validations: [
+      {
+        rule: "required",
+        errorMessage: "Team is required",
+      },
+    ],
   },
+
 
 ] as const
 
@@ -493,13 +530,44 @@ const mockComponentBehaviourForTypes = <T extends string>(props: RsiProps<T>) =>
 
 export const mockRsiValues = mockComponentBehaviourForTypes({
   ...defaultRSIProps,
-  organizations: [{ name: "Zaacom", id: "1" }, { name: "Addictus", id: "2" }],
+  organizations: [{ name: "Zaacom", id: "71d2ccbb-7706-45c9-97c1-bbb2fa4130ce" }, { name: "Addictus", id: "2" }],
   fields: fields,
   onSubmit: (data) => {
     console.log(data.all.map((value) => value))
   },
   isOpen: true,
   isNavigationEnabled:true,
+  autoMapDistance: 2,
+  savedMapping:{
+    sponso: {
+      "non obligatoire": "NON_MANDATORY",
+    },
+    themes: {
+      "health": "Santé",
+      "Stando": "Santé",
+    }
+  },
+  getProfiles: async (orgaId) => {
+    return axios.get(`http://localhost:8091/import/profile/${orgaId}`)
+  },
+  saveProfiles: async (orgaId, profiles) => {
+    return axios.post(`http://localhost:8091/import/profile/${orgaId}`, profiles)
+  },
+
+  getSavedMapping: async () => {
+    return axios.get(`http://localhost:8091/import/savedMapping`)
+  },
+
+  saveMapping: async (field: string,key: string, value: string) => {
+    axios.post(`http://localhost:8091/import/savedMapping`, {field:field,key:key,value:value})
+
+  },
+  getSavedAlternateFields: async  () => {
+    return axios.get(`http://localhost:8091/savedAlternateFields`)
+  },
+  saveSavedAlternateFields:async (field: string, value: string) => {
+    return axios.post(`http://localhost:8091/savedAlternateFields`, {field:field,value:value})
+  },
   onClose: () => {},
   // uploadStepHook: async (data) => {
   //   await new Promise((resolve) => {

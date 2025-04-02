@@ -12,12 +12,14 @@ import type { Field, RawData } from "../../types"
 import { getMatchedColumns } from "./utils/getMatchedColumns"
 import { UnmatchedFieldsAlert } from "../../components/Alerts/UnmatchedFieldsAlert"
 import { findUnmatchedRequiredFields } from "./utils/findUnmatchedRequiredFields"
+import { Profile } from "../SelectEditorProfileStep/SelectEditorProfileStep"
 
 export type MatchColumnsProps<T extends string> = {
   data: RawData[]
   headerValues: RawData
   onContinue: (data: any[], rawData: RawData[], columns: Columns<T>) => void
   onBack?: () => void
+  profile: Profile
 }
 
 export enum ColumnType {
@@ -68,10 +70,11 @@ export const MatchColumnsStep = <T extends string>({
   headerValues,
   onContinue,
   onBack,
+  profile
 }: MatchColumnsProps<T>) => {
   const toast = useToast()
   const dataExample = data.slice(0, 2)
-  const { fields, autoMapHeaders, autoMapSelectValues, autoMapDistance, translations } = useRsi<T>()
+  const { fields, autoMapHeaders, autoMapSelectValues, autoMapDistance, translations,savedMapping } = useRsi<T>()
   const [isLoading, setIsLoading] = useState(false)
   const [columns, setColumns] = useState<Columns<T>>(
     // Do not remove spread, it indexes empty array elements, otherwise map() skips over them
@@ -81,13 +84,16 @@ export const MatchColumnsStep = <T extends string>({
 
   const onChange = useCallback(
     (value: T, columnIndex: number) => {
+      console.log(value)
+      console.log(columnIndex)
+      console.log(headerValues)
       const field = fields.find((field) => field.key === value) as unknown as Field<T>
       const existingFieldIndex = columns.findIndex((column) => "value" in column && column.value === field.key)
       setColumns(
         columns.map<Column<T>>((column, index) => {
-          columnIndex === index ? setColumn(column, field, data) : column
+          columnIndex === index ? setColumn(column, savedMapping,field, data) : column
           if (columnIndex === index) {
-            return setColumn(column, field, data, autoMapSelectValues)
+            return setColumn(column, savedMapping,field, data, autoMapSelectValues)
           } else if (index === existingFieldIndex) {
             toast({
               status: "warning",
@@ -97,7 +103,7 @@ export const MatchColumnsStep = <T extends string>({
               description: translations.matchColumnsStep.duplicateColumnWarningDescription,
               isClosable: true,
             })
-            return setColumn(column)
+            return setColumn(column,savedMapping)
           } else {
             return column
           }
@@ -124,7 +130,7 @@ export const MatchColumnsStep = <T extends string>({
 
   const onRevertIgnore = useCallback(
     (columnIndex: number) => {
-      setColumns(columns.map((column, index) => (columnIndex === index ? setColumn(column) : column)))
+      setColumns(columns.map((column, index) => (columnIndex === index ? setColumn(column,savedMapping) : column)))
     },
     [columns, setColumns],
   )
@@ -146,7 +152,7 @@ export const MatchColumnsStep = <T extends string>({
       setShowUnmatchedFieldsAlert(true)
     } else {
       setIsLoading(true)
-      await onContinue(normalizeTableData(columns, data, fields), data, columns)
+      await onContinue(normalizeTableData(columns, data, fields,profile), data, columns)
       setIsLoading(false)
     }
   }, [unmatchedRequiredFields.length, onContinue, columns, data, fields])
@@ -154,14 +160,14 @@ export const MatchColumnsStep = <T extends string>({
   const handleAlertOnContinue = useCallback(async () => {
     setShowUnmatchedFieldsAlert(false)
     setIsLoading(true)
-    await onContinue(normalizeTableData(columns, data, fields), data, columns)
+    await onContinue(normalizeTableData(columns, data, fields,profile), data, columns)
     setIsLoading(false)
   }, [onContinue, columns, data, fields])
 
   useEffect(
     () => {
       if (autoMapHeaders) {
-        setColumns(getMatchedColumns(columns, fields, data, autoMapDistance, autoMapSelectValues))
+        setColumns(getMatchedColumns(columns, fields, data, autoMapDistance,savedMapping, autoMapSelectValues))
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -171,6 +177,7 @@ export const MatchColumnsStep = <T extends string>({
   return (
     <>
       <UnmatchedFieldsAlert
+        profile={profile}
         isOpen={showUnmatchedFieldsAlert}
         onClose={() => setShowUnmatchedFieldsAlert(false)}
         fields={unmatchedRequiredFields}

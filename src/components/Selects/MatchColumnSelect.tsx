@@ -21,9 +21,23 @@ export const MatchColumnSelect = ({ onChange, value, options, placeholder, name 
       onChange={onChange}
       placeholder={placeholder}
       options={options}
-      chakraStyles={styles.select}
+
       menuPosition="fixed"
       components={customComponents}
+      chakraStyles={{
+        ...styles.select,
+        menu: (provided) => ({
+          ...provided,
+          width: "auto", // Allow natural content width
+          minWidth: "300px", // Set a minimum width for the dropdown
+          maxWidth: "600px", // Optional: prevent overly wide menus
+        }),
+        menuList: (provided) => ({
+          ...provided,
+          maxHeight: "300px", // Optional: scroll behavior
+          overflowY: "auto",
+        }),
+      }}
       aria-label={name}
     />
   )

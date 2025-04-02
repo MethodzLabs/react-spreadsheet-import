@@ -2,42 +2,16 @@ import type { Columns } from "../MatchColumnsStep"
 import { ColumnType } from "../MatchColumnsStep"
 import type { Data, Fields, RawData } from "../../../types"
 import { normalizeCheckboxValue } from "./normalizeCheckboxValue"
-import { Profile } from "../../ValidationStep/types"
+import { Profile } from "../../SelectEditorProfileStep/SelectEditorProfileStep"
+
+
 
 export const normalizeTableData = <T extends string>(
   columns: Columns<T>,
   data: RawData[],
-  fields: Fields<T>
+  fields: Fields<T>,
+  profile: Profile
 ) => {
-  const defaultProfile: Profile = {
-    additionalPriceDofollow: null,
-    additionalPriceSponso: null,
-    additionnalPriceCBD: null,
-    additionnalPriceCasino: null,
-    additionnalPriceCrypto: null,
-    additionnalPriceFinance: null,
-    additionnalPriceHealth: null,
-    additionnalPriceSex: null,
-    category: "",
-    categoryUrl: "",
-    isGoogleNews: false,
-    isPrivate: false,
-    languages: [],
-    linkType: "Lien en \"doFollow\"",
-    nbMaxLinksClient: 0,
-    nbMaxLinksExternal: 0,
-    nbWords: 0,
-    presentation: "",
-    pricePer100Words: 0,
-    priceWithRedaction: null,
-    priceWithoutRedaction: null,
-    redactionType: "no",
-    sponso: false,
-    targetCountries: [],
-    themes: [],
-    url: "",
-    validityDuration: 0,
-  };
 
   return data.map((row) => {
     const result = columns.reduce((acc, column, index) => {
@@ -76,7 +50,7 @@ export const normalizeTableData = <T extends string>(
 
     // Merge with defaultProfile to add missing keys
     return {
-      ...defaultProfile,
+      ...profile,
       ...result, // values in result override defaultProfile if they exist
     };
   });

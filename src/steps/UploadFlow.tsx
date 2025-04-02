@@ -13,7 +13,7 @@ import { useRsi } from "../hooks/useRsi"
 import type { RawData } from "../types"
 import { SelectEditorStep } from "./SelectEditorStep/SelectEditorStep"
 import { SelectImportTypeStep } from "./SelectImportTypeStep/SelectImportTypeStep"
-import { SelectEditorProfileStep } from "./SelectEditorProfileStep/SelectEditorProfileStep"
+import { Profile, SelectEditorProfileStep } from "./SelectEditorProfileStep/SelectEditorProfileStep"
 
 export enum StepType {
   organizationSelect= "organizationSelect",
@@ -77,6 +77,8 @@ export const UploadFlow = ({ state, onNext, onBack }: Props) => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const toast = useToast()
   const [organization, setOrganization] = useState(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
+
   const errorToast = useCallback(
     (description: string) => {
       toast({
@@ -124,8 +126,11 @@ export const UploadFlow = ({ state, onNext, onBack }: Props) => {
     case StepType.selectEditorProfile:
       return (
         <SelectEditorProfileStep
+          onBack={onBack}
+          organization={organization}
           onContinue={async (...args) => {
             try {
+              setProfile(args[0])
               onNext({
                 type: StepType.upload,
               })
@@ -138,6 +143,7 @@ export const UploadFlow = ({ state, onNext, onBack }: Props) => {
     case StepType.upload:
       return (
         <UploadStep
+          onBack={onBack}
           onContinue={async (workbook, file) => {
             setUploadedFile(file)
             const isSingleSheet = workbook.SheetNames.length === 1
@@ -205,6 +211,7 @@ export const UploadFlow = ({ state, onNext, onBack }: Props) => {
     case StepType.matchColumns:
       return (
         <MatchColumnsStep
+          profile={profile as Profile}
           data={state.data}
           headerValues={state.headerValues}
           onContinue={async (values, rawData, columns) => {
@@ -223,7 +230,7 @@ export const UploadFlow = ({ state, onNext, onBack }: Props) => {
         />
       )
     case StepType.validateData:
-      return <ValidationStep initialData={state.data} file={uploadedFile!} onBack={onBack} />
+      return <ValidationStep profile={profile as Profile} initialData={state.data} file={uploadedFile!} onBack={onBack} />
     default:
       return <Progress isIndeterminate />
   }

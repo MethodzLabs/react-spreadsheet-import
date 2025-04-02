@@ -10,6 +10,7 @@ export const getMatchedColumns = <T extends string>(
   fields: Fields<T>,
   data: MatchColumnsProps<T>["data"],
   autoMapDistance: number,
+  savedMapping: any,
   autoMapSelectValues?: boolean,
 ) =>
   columns.reduce<Column<T>[]>((arr, column) => {
@@ -22,18 +23,18 @@ export const getMatchedColumns = <T extends string>(
         return lavenstein(duplicate.value, duplicate.header) < lavenstein(autoMatch, column.header)
           ? [
               ...arr.slice(0, duplicateIndex),
-              setColumn(arr[duplicateIndex], field, data, autoMapSelectValues),
+              setColumn(arr[duplicateIndex], savedMapping,field, data, autoMapSelectValues),
               ...arr.slice(duplicateIndex + 1),
-              setColumn(column),
+              setColumn(column,savedMapping),
             ]
           : [
               ...arr.slice(0, duplicateIndex),
-              setColumn(arr[duplicateIndex]),
+              setColumn(arr[duplicateIndex],savedMapping),
               ...arr.slice(duplicateIndex + 1),
-              setColumn(column, field, data, autoMapSelectValues),
+              setColumn(column,savedMapping, field, data, autoMapSelectValues),
             ]
       } else {
-        return [...arr, setColumn(column, field, data, autoMapSelectValues)]
+        return [...arr, setColumn(column, savedMapping,field, data, autoMapSelectValues)]
       }
     } else {
       return [...arr, column]

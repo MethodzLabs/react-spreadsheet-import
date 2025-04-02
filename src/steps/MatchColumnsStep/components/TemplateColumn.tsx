@@ -74,15 +74,15 @@ export const TemplateColumn = <T extends string>({ column, onChange, onSubChange
                     data-testid="accordion-button"
                   >
                     <AccordionIcon />
-                    <Box textAlign="left">
+                    <Box >
                       <Text sx={styles.selectColumn.accordionLabel}>
                         {getAccordionTitle<T>(fields, column, translations)}
                       </Text>
                     </Box>
                   </AccordionButton>
-                  <AccordionPanel pb={4} pr={3} display="flex" flexDir="column">
+                  <AccordionPanel  pb={4} pr={3} display="flex" flexDir="column">
                     {column.matchedOptions.map((option) => (
-                      <SubMatchingSelect option={option} column={column} onSubChange={onSubChange} key={option.entry} />
+                      <SubMatchingSelect  option={option} column={column} onSubChange={onSubChange} key={option.entry} />
                     ))}
                   </AccordionPanel>
                 </AccordionItem>

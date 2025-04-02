@@ -51,6 +51,22 @@ export type RsiProps<T extends string> = {
   rtl?: boolean
 
   organizations: any[]
+
+  savedMapping?: any
+
+  getProfiles: (orgaId: string) => Promise<any>
+
+  saveProfiles: (orgaId: string, profile: any) => Promise<any>
+
+  getSavedMapping: () => any
+
+  saveMapping: (field: string,key: string, value: string) => any
+
+  getSavedAlternateFields: () => any
+
+  saveSavedAlternateFields: (field: string, value: string) => any
+
+
 }
 
 export type RawData = Array<string | undefined>
