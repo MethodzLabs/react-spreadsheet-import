@@ -37,7 +37,7 @@ export const setColumn = <T extends string>(
           }
 
             if (!value){
-              if (savedMapping && savedMapping[field.key] && savedMapping[field.key][record.entry]){
+              if (savedMapping && savedMapping[field.key] && savedMapping[field.key].map[record.entry]){
 
                 value = savedMapping[field.key][record.entry]
               }

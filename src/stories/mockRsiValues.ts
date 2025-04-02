@@ -538,15 +538,7 @@ export const mockRsiValues = mockComponentBehaviourForTypes({
   isOpen: true,
   isNavigationEnabled:true,
   autoMapDistance: 2,
-  savedMapping:{
-    sponso: {
-      "non obligatoire": "NON_MANDATORY",
-    },
-    themes: {
-      "health": "Santé",
-      "Stando": "Santé",
-    }
-  },
+  savedMapping: (await axios.get(`http://localhost:8091/import/savedMapping`)).data.data,
   getProfiles: async (orgaId) => {
     return axios.get(`http://localhost:8091/import/profile/${orgaId}`)
   },

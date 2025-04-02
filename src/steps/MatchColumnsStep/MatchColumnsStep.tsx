@@ -13,6 +13,7 @@ import { getMatchedColumns } from "./utils/getMatchedColumns"
 import { UnmatchedFieldsAlert } from "../../components/Alerts/UnmatchedFieldsAlert"
 import { findUnmatchedRequiredFields } from "./utils/findUnmatchedRequiredFields"
 import { Profile } from "../SelectEditorProfileStep/SelectEditorProfileStep"
+import axios from "axios"
 
 export type MatchColumnsProps<T extends string> = {
   data: RawData[]
@@ -74,7 +75,7 @@ export const MatchColumnsStep = <T extends string>({
 }: MatchColumnsProps<T>) => {
   const toast = useToast()
   const dataExample = data.slice(0, 2)
-  const { fields, autoMapHeaders, autoMapSelectValues, autoMapDistance, translations,savedMapping } = useRsi<T>()
+  const { fields, autoMapHeaders, autoMapSelectValues, autoMapDistance, translations,savedMapping, saveMapping } = useRsi<T>()
   const [isLoading, setIsLoading] = useState(false)
   const [columns, setColumns] = useState<Columns<T>>(
     // Do not remove spread, it indexes empty array elements, otherwise map() skips over them
@@ -87,6 +88,8 @@ export const MatchColumnsStep = <T extends string>({
       console.log(value)
       console.log(columnIndex)
       console.log(headerValues)
+
+
       const field = fields.find((field) => field.key === value) as unknown as Field<T>
       const existingFieldIndex = columns.findIndex((column) => "value" in column && column.value === field.key)
       setColumns(
@@ -137,6 +140,8 @@ export const MatchColumnsStep = <T extends string>({
 
   const onSubChange = useCallback(
     (value: string, columnIndex: number, entry: string) => {
+      const column = columns[columnIndex]  as MatchedSelectOptionsColumn<T>
+      saveMapping(column.value, entry, value)
       setColumns(
         columns.map((column, index) =>
           columnIndex === index && "matchedOptions" in column ? setSubColumn(column, entry, value) : column,
