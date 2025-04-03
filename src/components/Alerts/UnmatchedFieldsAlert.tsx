@@ -12,6 +12,7 @@ import {
 import { useRef } from "react"
 import { useRsi } from "../../hooks/useRsi"
 import { Profile } from "../../steps/SelectEditorProfileStep/SelectEditorProfileStep"
+import { Columns } from "../../steps/MatchColumnsStep/MatchColumnsStep"
 
 interface Props {
   isOpen: boolean
@@ -19,9 +20,10 @@ interface Props {
   onConfirm: () => void
   fields: string[]
   profile: Profile
+  columns: any[]
 }
 
-export const UnmatchedFieldsAlert = ({ isOpen, onClose, onConfirm, fields , profile}: Props) => {
+export const UnmatchedFieldsAlert = ({ isOpen, onClose, onConfirm, fields, profile, columns }: Props) => {
   const { allowInvalidSubmit, translations } = useRsi()
   const cancelRef = useRef<HTMLButtonElement | null>(null)
 

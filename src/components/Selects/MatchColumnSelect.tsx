@@ -21,7 +21,6 @@ export const MatchColumnSelect = ({ onChange, value, options, placeholder, name 
       onChange={onChange}
       placeholder={placeholder}
       options={options}
-
       menuPosition="fixed"
       components={customComponents}
       chakraStyles={{

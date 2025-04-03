@@ -370,11 +370,10 @@ const fields = [
     example: "2",
     validations: [
       {
-        rule: "unique",
-        errorMessage: "Last name must be unique",
-        level: "info",
+        rule: "required",
+        errorMessage: "Nombre de mot is required",
       },
-    ]
+    ],
   },
   {
     label: "Tarif avec rédaction",
@@ -490,7 +489,7 @@ const fields = [
   },  {
     label: "Mention sponso",
     key: "sponso",
-    alternateMatches: ["qsd"],
+    alternateMatches: savedAlternateFields.alternateMatchs["SPONSO"]?.list ?? [],
     fieldType: {
       type: "select",
       options: [
@@ -506,9 +505,10 @@ const fields = [
         errorMessage: "Team is required",
       },
     ],
-  },  {
+  },
+  {
     label: "Catalogue privé",
-    key: "privateCatalog",
+    key: "isPrivate",
     alternateMatches: ["do follow"],
     fieldType: {
       type: "select",
@@ -525,8 +525,95 @@ const fields = [
       },
     ],
   },
-
-
+  {
+    label: "Présent sur Google News",
+    key: "isGoogleNews",
+    alternateMatches: [],
+    fieldType: {
+      type: "select",
+      options: [
+        { label: "Oui", value: "true" },
+        { label: "Non", value: "false" },
+      ],
+    },
+    example: "oui",
+    validations: [
+      {
+        rule: "required",
+        errorMessage: "Team is required",
+      },
+    ],
+  },
+  {
+    label: "Durée de validité",
+    key: "validityDuration",
+    alternateMatches: [],
+    fieldType: {
+      type: "select",
+      options: [
+        { label: "Toujours", value: "FOREVER" },
+        { label: "6 mois", value: "SIX_MONTHS" },
+        { label: "12 mois", value: "TWELVE_MONTHS" },
+        { label: "24 mois", value: "TWENTY_FOUR_MONTHS" },
+      ],
+    },
+    example: "12 mois",
+    validations: [
+      {
+        rule: "required",
+        errorMessage: "La durée de validité est requise",
+      },
+    ],
+  },
+  {
+    label: "Catégorie",
+    key: "category",
+    alternateMatches: [],
+    fieldType: {
+      type: "select",
+      options: [
+        { label: "Imposée", value: "IMPOSED" },
+        { label: "Catégorie imposée", value: "IMPOSED_CATEGORY" },
+        { label: "Non imposée", value: "NOT_IMPOSED" },
+      ],
+    },
+    example: "Imposée",
+    validations: [
+      {
+        rule: "required",
+        errorMessage: "La catégorie est requise",
+      },
+    ],
+  },
+  {
+    label: "URL de la catégorie",
+    key: "categoryUrl",
+    alternateMatches: [],
+    fieldType: {
+      type: "text",
+    },
+    example: "https://exemple.com/categorie",
+  },
+  {
+    label: "Type de rédaction",
+    key: "redactionType",
+    alternateMatches: [],
+    fieldType: {
+      type: "select",
+      options: [
+        { label: "Humaine", value: "HUMAN" },
+        { label: "IA", value: "AI" },
+        { label: "Mixte", value: "MIXED" },
+      ],
+    },
+    example: "Mixte",
+    validations: [
+      {
+        rule: "required",
+        errorMessage: "Le type de rédaction est requis",
+      },
+    ],
+  },
 ] as const
 
 const mockComponentBehaviourForTypes = <T extends string>(props: RsiProps<T>) => props

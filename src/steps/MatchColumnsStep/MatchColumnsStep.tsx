@@ -75,8 +75,16 @@ export const MatchColumnsStep = <T extends string>({
 }: MatchColumnsProps<T>) => {
   const toast = useToast()
   const dataExample = data.slice(0, 2)
-  const { fields, autoMapHeaders, autoMapSelectValues, autoMapDistance, translations, savedMapping, saveMapping, saveSavedAlternateFields } =
-    useRsi<T>()
+  const {
+    fields,
+    autoMapHeaders,
+    autoMapSelectValues,
+    autoMapDistance,
+    translations,
+    savedMapping,
+    saveMapping,
+    saveSavedAlternateFields,
+  } = useRsi<T>()
   const [isLoading, setIsLoading] = useState(false)
   const [columns, setColumns] = useState<Columns<T>>(
     // Do not remove spread, it indexes empty array elements, otherwise map() skips over them
@@ -130,14 +138,14 @@ export const MatchColumnsStep = <T extends string>({
 
   const onRevertIgnore = useCallback(
     (columnIndex: number) => {
-      setColumns(columns.map((column, index) => (columnIndex === index ? setColumn(column,savedMapping) : column)))
+      setColumns(columns.map((column, index) => (columnIndex === index ? setColumn(column, savedMapping) : column)))
     },
     [columns, setColumns],
   )
 
   const onSubChange = useCallback(
     (value: string, columnIndex: number, entry: string) => {
-      const column = columns[columnIndex]  as MatchedSelectOptionsColumn<T>
+      const column = columns[columnIndex] as MatchedSelectOptionsColumn<T>
       saveMapping(column.value, entry, value)
       setColumns(
         columns.map((column, index) =>
@@ -154,7 +162,7 @@ export const MatchColumnsStep = <T extends string>({
       setShowUnmatchedFieldsAlert(true)
     } else {
       setIsLoading(true)
-      await onContinue(normalizeTableData(columns, data, fields,profile), data, columns)
+      await onContinue(normalizeTableData(columns, data, fields, profile), data, columns)
       setIsLoading(false)
     }
   }, [unmatchedRequiredFields.length, onContinue, columns, data, fields])
@@ -162,14 +170,14 @@ export const MatchColumnsStep = <T extends string>({
   const handleAlertOnContinue = useCallback(async () => {
     setShowUnmatchedFieldsAlert(false)
     setIsLoading(true)
-    await onContinue(normalizeTableData(columns, data, fields,profile), data, columns)
+    await onContinue(normalizeTableData(columns, data, fields, profile), data, columns)
     setIsLoading(false)
   }, [onContinue, columns, data, fields])
 
   useEffect(
     () => {
       if (autoMapHeaders) {
-        setColumns(getMatchedColumns(columns, fields, data, autoMapDistance,savedMapping, autoMapSelectValues))
+        setColumns(getMatchedColumns(columns, fields, data, autoMapDistance, savedMapping, autoMapSelectValues))
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -182,14 +190,18 @@ export const MatchColumnsStep = <T extends string>({
         profile={profile}
         isOpen={showUnmatchedFieldsAlert}
         onClose={() => setShowUnmatchedFieldsAlert(false)}
-        fields={unmatchedRequiredFields}
+        fields={unmatchedRequiredFields.map((elm) => elm.label)}
         onConfirm={handleAlertOnContinue}
+        columns={columns}
       />
+
       <ColumnGrid
         columns={columns}
         onContinue={handleOnContinue}
         onBack={onBack}
         isLoading={isLoading}
+        toMatch={unmatchedRequiredFields}
+        profile={profile}
         userColumn={(column) => (
           <UserTableColumn
             column={column}

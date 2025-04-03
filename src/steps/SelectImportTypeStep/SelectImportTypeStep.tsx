@@ -23,14 +23,22 @@ export const SelectImportTypeStep = ({ onContinue }: UploadProps) => {
     setIsLoading(true)
     await onContinue(data)
     setIsLoading(false)
-  }, [onContinue,])
+  }, [onContinue])
 
   const importOptions = [
-    "Mise à jour globale",
-    "Ajout d'offres",
-    "Ajout d'options",
-    "Mise à jour d'offres",
+    "Inscription simple",
+    "Mise à jour des sites éditeurs",
+    "Mise à jour des prix",
+    "Remplacement des offres",
   ];
+
+  const importOptionsDesc = [
+    "Enregistre les sites présent dans le fichier, ignore ceux déja présent en base, si les offres ont une visibilité différente ( catalogue privé / catalogue publique ) ou un éditeur différent que celles déja présente en base, ajoute aux offres existantes",
+    "Enregistre les sites présent dans le fichier, met uniquement à jour les prix pour ceux déjà présent en base, supprime les sites qui ne sont plus présent.",
+    "Agis uniquement sur les tarifs des sites, sans enregistrer ni supprimer de sites",
+    "Remplace toutes les offres du même type ",
+  ];
+
 
   const handleOptionClick = useCallback((option: string) => {
     setSelectedImportType(option);
@@ -48,7 +56,7 @@ export const SelectImportTypeStep = ({ onContinue }: UploadProps) => {
           marginTop: "1rem",
         }}
       >
-        {importOptions.map((option) => (
+        {importOptions.map((option, index) => (
           <div
             key={option}
             onClick={() => handleOptionClick(option)}
@@ -59,8 +67,10 @@ export const SelectImportTypeStep = ({ onContinue }: UploadProps) => {
               borderRadius: "4px",
               cursor: "pointer",
             }}
-          >
+          ><div>
             {option}
+          </div>
+            <div style={{ fontWeight: "lighter", fontSize: "12px" }}>{importOptionsDesc[index]}</div>
           </div>
         ))}
       </div>
