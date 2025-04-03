@@ -47,11 +47,12 @@ export const normalizeTableData = <T extends string>(
       }
       return acc;
     }, {} as Data<T>);
+    const { id, organizationId, name, ...restResult } = profile;
 
     // Merge with defaultProfile to add missing keys
     return {
-      ...profile,
+      ...restResult,
       ...result, // values in result override defaultProfile if they exist
-    };
-  });
-};
+    }
+  })
+}
