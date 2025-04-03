@@ -31,6 +31,7 @@ import {
   InputGroup,
   InputRightAddon,
   SimpleGrid,
+  Stack,
 } from "@chakra-ui/react"
 import { useRsi } from "../../hooks/useRsi"
 
@@ -41,16 +42,17 @@ export type Profile = {
   id?: string
   organizationId?: string
   name?: string | undefined
-  themes: string[] | undefined
-  languages: string[] | undefined
-  targetCountries: string[] | undefined
+  type?: string | undefined
+  themes: string | undefined
+  languages: string | undefined
+  targetCountries: string | undefined
   linkType: "DO_FOLLOW" | "NO_FOLLOW" | "BOTH" | undefined
   nbMaxLinksClient: number | undefined
   nbMaxLinksExternal: number | undefined
   nbWords: number | undefined
   sponso: "SPONSO" | "NO_SPONSO" | "BOTH" | undefined
-  isPrivate: boolean | undefined
-  isGoogleNews: boolean | undefined
+  isPrivate: string | undefined
+  isGoogleNews: string | undefined
   validityDuration: "FOREVER" | "SIX_MONTHS" | "TWELVE_MONTHS" | "TWENTY_FOUR_MONTHS" | undefined
   category: "IMPOSED" | "IMPOSED_CATEGORY" | "NOT_IMPOSED" | undefined
   categoryUrl: string | undefined
@@ -85,9 +87,10 @@ type SelectEditorProfileStepProps = {
 
 // Sample default profile for new profile creation
 const DEFAULT_PROFILE: Profile = {
-  themes: [],
-  languages: [],
-  targetCountries: [],
+  type: undefined,
+  themes: undefined,
+  languages: undefined,
+  targetCountries: undefined,
   linkType: undefined,
   nbMaxLinksClient: undefined,
   nbMaxLinksExternal: undefined,
@@ -136,7 +139,7 @@ export const SelectEditorProfileStep = ({ onContinue, organization, onBack }: Se
   const [currentField, setCurrentField] = useState<"themes" | "languages" | "targetCountries">("themes")
 
   const styles = useStyleConfig("UploadStep") as (typeof themeOverrides)["components"]["UploadStep"]["baseStyle"]
-  const { getProfiles, translations, saveProfiles } = useRsi()
+  const { getProfiles, translations, saveProfiles, fields } = useRsi()
 
   useEffect(() => {
     getProfiles(organization.id).then((response) => {
@@ -170,10 +173,6 @@ export const SelectEditorProfileStep = ({ onContinue, organization, onBack }: Se
       organizationId: organization.id,
       id: newProfile?.id,
       name: newProfile.name || `Profile ${profiles.length + 1}`,
-      // Ensure array fields are not undefined
-      themes: newProfile.themes || [],
-      languages: newProfile.languages || [],
-      targetCountries: newProfile.targetCountries || [],
     }
 
     try {
@@ -208,9 +207,6 @@ export const SelectEditorProfileStep = ({ onContinue, organization, onBack }: Se
     // Set the profile to edit, ensuring array fields exist
     setNewProfile({
       ...profile,
-      themes: profile.themes || [],
-      languages: profile.languages || [],
-      targetCountries: profile.targetCountries || [],
     })
     setIsEditing(true)
     onOpen()
@@ -219,30 +215,12 @@ export const SelectEditorProfileStep = ({ onContinue, organization, onBack }: Se
   const handleCreateNewProfile = () => {
     setNewProfile({
       ...DEFAULT_PROFILE,
-      themes: [],
-      languages: [],
-      targetCountries: [],
     })
     setIsEditing(false)
     onOpen()
   }
 
   // Helpers for tag inputs
-  const addItem = (field: "themes" | "languages" | "targetCountries") => {
-    if (!tempInput.trim()) return
-    setNewProfile((prev) => ({
-      ...prev,
-      [field]: [...(prev[field] || []), tempInput.trim()],
-    }))
-    setTempInput("")
-  }
-
-  const removeItem = (field: "themes" | "languages" | "targetCountries", index: number) => {
-    setNewProfile((prev) => ({
-      ...prev,
-      [field]: (prev[field] || []).filter((_, i) => i !== index),
-    }))
-  }
 
   // Get badge color based on link type
   const getLinkTypeBadgeColor = (linkType: Profile["linkType"]) => {
@@ -283,122 +261,143 @@ export const SelectEditorProfileStep = ({ onContinue, organization, onBack }: Se
           {profiles.map((profile, index) => (
             <Box
               key={profile.id ?? index}
-              p={4}
+              p={5}
               mb={4}
               borderWidth="1px"
-              borderRadius="md"
+              borderRadius="lg"
               cursor="pointer"
               bg={selectedProfile === profile ? "blue.50" : "white"}
               borderColor={selectedProfile === profile ? "blue.500" : "gray.200"}
               onClick={() => handleProfileSelect(profile)}
               position="relative"
+              boxShadow="sm"
             >
-              {/* Edit button positioned in the top-right corner */}
+              {/* Bouton de modification */}
               <Button
                 size="sm"
                 colorScheme="blue"
                 variant="ghost"
                 position="absolute"
-                top={2}
-                right={2}
+                top={3}
+                right={3}
                 onClick={(e) => handleEditProfile(profile, e)}
               >
                 Modifier
               </Button>
 
-              <Flex direction="column" gap={3} pt={6}>
-                {/* Header with name and price */}
-                <Flex justify="space-between" align="center">
-                  <Heading size="md">{profile.name ?? `Profil ${index + 1}`}</Heading>
-                  <HStack spacing={2}>
+              <Flex direction="column" gap={4} pt={2}>
+                {/* En-tête avec nom et prix */}
+                <Flex justify="space-between" align="baseline" wrap="wrap">
+                  <Heading size="md" mb={2}>
+                    {profile.name ?? `Profil ${index + 1}`}
+                  </Heading>
+                  <HStack spacing={3} mb={2}>
                     {profile.priceWithoutRedaction != null && (
-                      <Text fontSize="sm" color="gray.500">
-                        Sans rédaction: {profile.priceWithoutRedaction}€
+                      <Text fontSize="sm" color="gray.600">
+                        Sans rédaction: <span style={{ fontWeight: "bold" }}>{profile.priceWithoutRedaction}€</span>
                       </Text>
                     )}
                     {profile.priceWithRedaction != null && (
-                      <Text fontWeight="bold" color="blue.500">
+                      <Text fontSize="md" color="blue.600" fontWeight="bold">
                         Avec rédaction: {profile.priceWithRedaction}€
                       </Text>
                     )}
                   </HStack>
                 </Flex>
 
-                {/* Main badges row */}
-                <Flex wrap="wrap" gap={2}>
-                  <Badge colorScheme={profile.isGoogleNews ? "green" : "gray"}>
-                    {profile.isGoogleNews ? "Présent sur Google News" : "Non présent sur Google News"}
-                  </Badge>
-                  <Badge colorScheme={getLinkTypeBadgeColor(profile.linkType)}>
-                    {formatEnumValue(profile.linkType) ?? "Non spécifié"}
-                  </Badge>
-                  <Badge colorScheme={getSponsoBadgeColor(profile.sponso)}>
-                    {formatEnumValue(profile.sponso) ?? "Non spécifié"}
-                  </Badge>
-                  <Badge colorScheme={profile.isPrivate ? "red" : "gray"}>
-                    {profile.isPrivate ? "Privé" : "Public"}
-                  </Badge>
-                  <Badge colorScheme="blue">
-                    {profile.nbWords != null ? `${profile.nbWords} mots` : "Nombre de mots inconnu"}
-                  </Badge>
-                  <Badge colorScheme="purple">{formatEnumValue(profile.redactionType) ?? "Non spécifié"}</Badge>
-                </Flex>
+                {/* Informations principales en deux colonnes */}
+                <SimpleGrid columns={[1, null, 2]} spacing={4}>
+                  {/* Colonne gauche */}
+                  <Box>
+                    {/* Badges principaux */}
+                    <Flex wrap="wrap" gap={2} mb={4}>
+                      <Badge colorScheme={profile.isGoogleNews ? "green" : "gray"} px={2} py={1}>
+                        {profile.isGoogleNews ? "Google News" : "Hors Google News"}
+                      </Badge>
+                      <Badge colorScheme={getLinkTypeBadgeColor(profile.linkType)} px={2} py={1}>
+                        {formatEnumValue(profile.linkType) ?? "Type de lien non spécifié"}
+                      </Badge>
+                      <Badge colorScheme={getSponsoBadgeColor(profile.sponso)} px={2} py={1}>
+                        {formatEnumValue(profile.sponso) ?? "Mention sponso non spécifiée"}
+                      </Badge>
+                      <Badge colorScheme={profile.isPrivate ? "red" : "green"} px={2} py={1}>
+                        {profile.isPrivate ? "Privé" : "Public"}
+                      </Badge>
+                    </Flex>
 
-                {/* Links and word details */}
-                <SimpleGrid columns={[1, 2, 3]} spacing={4}>
-                  <Box>
-                    <Text fontSize="sm" fontWeight="semibold">
-                      Liens
-                    </Text>
-                    <Text fontSize="sm">Client: max {profile.nbMaxLinksClient ?? "?"}</Text>
-                    <Text fontSize="sm">Externe: max {profile.nbMaxLinksExternal ?? "?"}</Text>
+                    {/* Caractéristiques */}
+                    <Stack spacing={2}>
+                      <Flex>
+                        <Text fontSize="sm" fontWeight="semibold" w="40%">
+                          Type de rédaction:
+                        </Text>
+                        <Text fontSize="sm">{formatEnumValue(profile.redactionType) ?? "Non spécifié"}</Text>
+                      </Flex>
+                      <Flex>
+                        <Text fontSize="sm" fontWeight="semibold" w="40%">
+                          Nombre de mots:
+                        </Text>
+                        <Text fontSize="sm">{profile.nbWords ?? "Non spécifié"}</Text>
+                      </Flex>
+                      <Flex>
+                        <Text fontSize="sm" fontWeight="semibold" w="40%">
+                          Catégorie:
+                        </Text>
+                        <Text fontSize="sm">{formatEnumValue(profile.category) ?? "Non spécifiée"}</Text>
+                      </Flex>
+                      <Flex>
+                        <Text fontSize="sm" fontWeight="semibold" w="40%">
+                          Durée de validité:
+                        </Text>
+                        <Text fontSize="sm">{formatEnumValue(profile.validityDuration) ?? "Non spécifiée"}</Text>
+                      </Flex>
+                    </Stack>
                   </Box>
-                  <Box>
-                    <Text fontSize="sm" fontWeight="semibold">
-                      Catégorie
-                    </Text>
-                    <Text fontSize="sm">{formatEnumValue(profile.category) ?? "Non spécifiée"}</Text>
-                    {profile.categoryUrl && (
-                      <Text fontSize="sm" noOfLines={1}>
-                        URL: {profile.categoryUrl}
-                      </Text>
-                    )}
-                  </Box>
-                  <Box>
-                    <Text fontSize="sm" fontWeight="semibold">
-                      Validité
-                    </Text>
-                    <Text fontSize="sm">{formatEnumValue(profile.validityDuration) ?? "Non spécifiée"}</Text>
-                  </Box>
-                </SimpleGrid>
 
-                {/* Arrays as tag lists */}
-                <SimpleGrid columns={[1, 3]} spacing={4}>
-                  {["themes", "languages", "targetCountries"].map((field) => (
-                    <Box key={field}>
-                      <Text fontSize="sm" fontWeight="semibold">
-                        {formatEnumValue(field)}
+                  {/* Colonne droite */}
+                  <Box>
+                    {/* Liens */}
+                    <Box mb={4}>
+                      <Text fontSize="sm" fontWeight="semibold" mb={1}>
+                        Liens autorisés
                       </Text>
-                      <Flex flexWrap="wrap" gap={1} mt={1}>
-                        {field in profile &&
-                        Array.isArray(profile[field as keyof Profile]) &&
-                        (profile[field as keyof Profile] as string[])?.length > 0 ? (
-                          (profile[field as keyof Profile] as string[])?.map((item: string, i: number) => (
-                            <Tag size="sm" key={i} colorScheme="gray">
-                              {item}
-                            </Tag>
-                          ))
-                        ) : (
-                          <Text fontSize="xs" color="gray.500">
-                            Aucun
-                          </Text>
-                        )}
+                      <Flex gap={4}>
+                        <Text fontSize="sm">Client: max {profile.nbMaxLinksClient ?? "?"}</Text>
+                        <Text fontSize="sm">Externe: max {profile.nbMaxLinksExternal ?? "?"}</Text>
                       </Flex>
                     </Box>
-                  ))}
+
+                    {/* Informations géographiques */}
+                    <Stack spacing={2}>
+                      <Flex>
+                        <Text fontSize="sm" fontWeight="semibold" w="40%">
+                          Pays cible:
+                        </Text>
+                        <Text fontSize="sm">{profile.targetCountries ?? "Non spécifié"}</Text>
+                      </Flex>
+                      <Flex>
+                        <Text fontSize="sm" fontWeight="semibold" w="40%">
+                          Langue:
+                        </Text>
+                        <Text fontSize="sm">{profile.languages ?? "Non spécifié"}</Text>
+                      </Flex>
+                      <Flex>
+                        <Text fontSize="sm" fontWeight="semibold" w="40%">
+                          Type de site:
+                        </Text>
+                        <Text fontSize="sm">{profile.type ?? "Non spécifié"}</Text>
+                      </Flex>
+                      <Flex>
+                        <Text fontSize="sm" fontWeight="semibold" w="40%">
+                          Thème:
+                        </Text>
+                        <Text fontSize="sm">{profile.themes ?? "Non spécifié"}</Text>
+                      </Flex>
+                    </Stack>
+                  </Box>
                 </SimpleGrid>
 
-                {/* Additional pricing section */}
+                {/* Frais additionnels - affichés uniquement si présents */}
                 {(profile.pricePer100Words != null ||
                   profile.additionnalPriceCrypto != null ||
                   profile.additionnalPriceHealth != null ||
@@ -408,37 +407,37 @@ export const SelectEditorProfileStep = ({ onContinue, organization, onBack }: Se
                   profile.additionnalPriceCasino != null ||
                   profile.additionalPriceSponso != null ||
                   profile.additionalPriceDofollow != null) && (
-                  <Box>
-                    <Text fontSize="sm" fontWeight="semibold">
-                      Tarifs additionnels
+                  <Box borderTopWidth="1px" pt={3} mt={2}>
+                    <Text fontSize="sm" fontWeight="semibold" mb={2}>
+                      Frais supplémentaires
                     </Text>
-                    <SimpleGrid columns={[2, 3, 4]} spacing={2}>
+                    <SimpleGrid columns={[2, 3, 4]} spacing={3}>
                       {profile.pricePer100Words != null && (
-                        <Text fontSize="xs">100 mots: {profile.pricePer100Words}€</Text>
+                        <Text fontSize="sm">100 mots: +{profile.pricePer100Words}€</Text>
                       )}
                       {profile.additionnalPriceCrypto != null && (
-                        <Text fontSize="xs">Crypto: +{profile.additionnalPriceCrypto}€</Text>
+                        <Text fontSize="sm">Crypto: +{profile.additionnalPriceCrypto}€</Text>
                       )}
                       {profile.additionnalPriceHealth != null && (
-                        <Text fontSize="xs">Santé: +{profile.additionnalPriceHealth}€</Text>
+                        <Text fontSize="sm">Santé: +{profile.additionnalPriceHealth}€</Text>
                       )}
                       {profile.additionnalPriceCBD != null && (
-                        <Text fontSize="xs">CBD: +{profile.additionnalPriceCBD}€</Text>
+                        <Text fontSize="sm">CBD: +{profile.additionnalPriceCBD}€</Text>
                       )}
                       {profile.additionnalPriceSex != null && (
-                        <Text fontSize="xs">Sexe: +{profile.additionnalPriceSex}€</Text>
+                        <Text fontSize="sm">Sexe: +{profile.additionnalPriceSex}€</Text>
                       )}
                       {profile.additionnalPriceFinance != null && (
-                        <Text fontSize="xs">Finance: +{profile.additionnalPriceFinance}€</Text>
+                        <Text fontSize="sm">Finance: +{profile.additionnalPriceFinance}€</Text>
                       )}
                       {profile.additionnalPriceCasino != null && (
-                        <Text fontSize="xs">Casino: +{profile.additionnalPriceCasino}€</Text>
+                        <Text fontSize="sm">Casino: +{profile.additionnalPriceCasino}€</Text>
                       )}
                       {profile.additionalPriceSponso != null && (
-                        <Text fontSize="xs">Sponsorisé: +{profile.additionalPriceSponso}€</Text>
+                        <Text fontSize="sm">Sponsorisé: +{profile.additionalPriceSponso}€</Text>
                       )}
                       {profile.additionalPriceDofollow != null && (
-                        <Text fontSize="xs">Dofollow: +{profile.additionalPriceDofollow}€</Text>
+                        <Text fontSize="sm">Dofollow: +{profile.additionalPriceDofollow}€</Text>
                       )}
                     </SimpleGrid>
                   </Box>
@@ -503,59 +502,78 @@ export const SelectEditorProfileStep = ({ onContinue, organization, onBack }: Se
                       <option value="TWENTY_FOUR_MONTHS">24 mois</option>
                     </Select>
                   </FormControl>
-
-                  {["themes", "languages", "targetCountries"].map((field) => (
-                    <FormControl key={field} gridColumn={[null, null, "span 2"]}>
-                      <FormLabel>{formatEnumValue(field)}</FormLabel>
-                      <Flex mb={2} wrap="wrap">
-                        {isProfileArrayField(field) &&
-                          (newProfile[field] || []).map((item, index) => (
-                            <Tag
-                              size="md"
-                              key={index}
-                              borderRadius="full"
-                              variant="solid"
-                              colorScheme={field === "themes" ? "blue" : field === "languages" ? "green" : "purple"}
-                              m={1}
-                            >
-                              <TagLabel>{item}</TagLabel>
-                              <TagCloseButton onClick={() => removeItem(field, index)} />
-                            </Tag>
-                          ))}
-                      </Flex>
-                      <InputGroup>
-                        <Input
-                          value={field === currentField ? tempInput : ""}
-                          onChange={(e) => {
-                            setCurrentField(field as any)
-                            setTempInput(e.target.value)
-                          }}
-                          placeholder={`Ajouter ${
-                            field === "themes" ? "un thème" : field === "languages" ? "une langue" : "un pays"
-                          }`}
-                          onKeyPress={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault()
-                              setCurrentField(field as any)
-                              addItem(field as any)
-                            }
-                          }}
-                          onFocus={() => setCurrentField(field as any)}
-                        />
-                        <InputRightAddon>
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setCurrentField(field as any)
-                              addItem(field as any)
-                            }}
-                          >
-                            +
-                          </Button>
-                        </InputRightAddon>
-                      </InputGroup>
-                    </FormControl>
-                  ))}
+                  <FormControl>
+                    <FormLabel>Type</FormLabel>
+                    <Select
+                      value={newProfile.type ?? ""}
+                      onChange={(e) => handleInputChange("type", e.target.value as Profile["themes"])}
+                    >
+                      <option value="" disabled hidden>
+                        Choisir...
+                      </option>
+                      {(fields.find((elm: any) => elm.key == "type")?.fieldType as any)?.options?.map((option: any) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <FormControl>
+                    <FormLabel>Langues</FormLabel>
+                    <Select
+                      value={newProfile.languages ?? ""}
+                      onChange={(e) => handleInputChange("languages", e.target.value as Profile["languages"])}
+                    >
+                      <option value="" disabled hidden>
+                        Choisir...
+                      </option>
+                      {(fields.find((elm: any) => elm.key == "languages")?.fieldType as any)?.options?.map(
+                        (option: any) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ),
+                      )}
+                    </Select>
+                  </FormControl>
+                  <FormControl>
+                    <FormLabel>Theme</FormLabel>
+                    <Select
+                      value={newProfile.themes ?? ""}
+                      onChange={(e) => handleInputChange("themes", e.target.value as Profile["themes"])}
+                    >
+                      <option value="" disabled hidden>
+                        Choisir...
+                      </option>
+                      {(fields.find((elm: any) => elm.key == "themes")?.fieldType as any)?.options?.map(
+                        (option: any) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ),
+                      )}
+                    </Select>
+                  </FormControl>
+                  <FormControl>
+                    <FormLabel>Pays</FormLabel>
+                    <Select
+                      value={newProfile.targetCountries ?? ""}
+                      onChange={(e) =>
+                        handleInputChange("targetCountries", e.target.value as Profile["targetCountries"])
+                      }
+                    >
+                      <option value="" disabled hidden>
+                        Choisir...
+                      </option>
+                      {(fields.find((elm: any) => elm.key == "targetCountries")?.fieldType as any)?.options?.map(
+                        (option: any) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ),
+                      )}
+                    </Select>
+                  </FormControl>
 
                   <FormControl>
                     <FormLabel>Catégorie</FormLabel>

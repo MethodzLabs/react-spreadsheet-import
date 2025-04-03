@@ -26,7 +26,11 @@ const fields = [
     key: "type",
     alternateMatches: ["Type de site"],
     fieldType: {
-      type: "input",
+      type: "select",
+      options: [
+        { label: "Blog", value: "Blog" },
+        { label: "Annuaire", value: "Annuaire" },
+      ],
     },
     example: "Média",
     validations: [
@@ -42,7 +46,11 @@ const fields = [
     key: "targetCountries",
     alternateMatches: ["Pays cible"],
     fieldType: {
-      type: "input",
+      type: "select",
+      options: [
+        { label: "France", value: "France" },
+        { label: "Espagne", value: "Espagne" },
+      ],
     },
     example: "France",
     validations: [

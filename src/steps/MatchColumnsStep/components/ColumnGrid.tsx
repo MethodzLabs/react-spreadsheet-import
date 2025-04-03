@@ -67,7 +67,15 @@ export const ColumnGrid = <T extends string>({
     console.log(columns)
     const items = Object.entries(profile)
       .map(([key, value]) => {
-        if (key == "name" || key == "organizationId" || key == "id") return
+        if (
+          key == "name" ||
+          key == "organizationId" ||
+          key == "id" ||
+          key.startsWith("price") ||
+          key.startsWith("additionnal") ||
+          key.startsWith("additional")
+        )
+          return
         const isInToMatch = toMatchKeys.has(key)
 
         let bg = "gray.200"
@@ -76,24 +84,33 @@ export const ColumnGrid = <T extends string>({
         if (!isInToMatch) {
           bg = "green.400"
           tag = "C"
-          tooltip= 'Utilise la valeur de la colonne "'+columns.find((elm : any)=>elm?.value==key)?.header+' "'
+          tooltip = 'Utilise la valeur de la colonne "' + columns.find((elm: any) => elm?.value == key)?.header + ' "'
         } else if (value !== null && isInToMatch) {
           bg = "green.400"
           tag = "P"
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          tooltip = "Utilise la valeur du profile "+profile[key]
+          tooltip = "Utilise la valeur du profile " + profile[key]
         } else if (value == null && isInToMatch) {
           tag = "M"
           bg = "red.400"
-          tooltip= "Mapping manquant"
+          tooltip = "Mapping manquant"
           // Add this field to our nullMatchFields array
           nullMatchFields.push(key)
         }
 
         return (
-          <Flex width={"300px"}>
-            <p style={{ fontSize: "12px", width: "190px" }}>{keyToLabelMap[key]}</p>
+          <Flex key={key} width={"300px"}>
+            <p
+              style={{
+                fontSize: "12px",
+                width: "190px",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              {keyToLabelMap[key]}
+            </p>
             <Tooltip key={key} label={tooltip} hasArrow>
               <Flex
                 direction="column"
@@ -127,9 +144,6 @@ export const ColumnGrid = <T extends string>({
     <>
       <ModalBody flexDir="column" p={8} overflow="auto">
         <Heading sx={styles.heading}>{translations.matchColumnsStep.title}</Heading>
-        <Flex gap={2} wrap="wrap" mt={4}>
-          <NullFieldsButton fields={items} nullsItems={nullMatchFields}></NullFieldsButton>
-        </Flex>
         <Flex
           flex={1}
           display="grid"
@@ -169,13 +183,17 @@ export const ColumnGrid = <T extends string>({
           "matchedOptions" in column &&
           Array.isArray(column.matchedOptions) &&
           column.matchedOptions.some((option) => !option.value),
-      ) ? (
+      ) || nullMatchFields.length > 0 ? (
         <>
           <ModalFooter>
             <Button size="md" sx={styles2.backButton} onClick={onBack} isLoading={isLoading} variant="link">
               retour
             </Button>
-            <UnmatchedColumnsButton columns={columns} />
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <UnmatchedColumnsButton columns={columns} />
+              <NullFieldsButton fields={items} nullsItems={nullMatchFields}></NullFieldsButton>
+            </div>
+            <div></div>
           </ModalFooter>
         </>
       ) : (
@@ -196,17 +214,17 @@ const UnmatchedColumnsButton = ({ columns }) => {
   const [isOpen, setIsOpen] = React.useState(false)
   const unmatchedColumnsData = columns
     .filter(
-      (column) =>
+      (column: any) =>
         "matchedOptions" in column &&
         Array.isArray(column.matchedOptions) &&
-        column.matchedOptions.some((option) => !option.value),
+        column.matchedOptions.some((option: any) => !option.value),
     )
     .map(
-      (column) =>
+      (column: any) =>
         "matchedOptions" in column && {
           name: column.header,
           value: column.value,
-          unmatchedCount: column.matchedOptions.filter((option) => !option.value).length,
+          unmatchedCount: column.matchedOptions.filter((option: any) => !option.value).length,
         },
     )
     .filter(Boolean) // Filter out any undefined results
@@ -283,7 +301,7 @@ const UnmatchedColumnsButton = ({ columns }) => {
                 </Box>
               </Box>
               <Box as="tbody">
-                {unmatchedColumnsData.map((column, index) => (
+                {unmatchedColumnsData.map((column: any, index: any) => (
                   <Box as="tr" key={index} borderTopWidth="1px" borderColor="gray.200">
                     <Box as="td" p={2}>
                       {column.name} -{">"} {keyToLabelMap[column.value]}
@@ -304,15 +322,15 @@ const UnmatchedColumnsButton = ({ columns }) => {
 
 // Replace your existing Object.entries code with the items render
 // Add this new component for the null fields button and modal
-const NullFieldsButton = ({ fields, nullsItems }) => {
+const NullFieldsButton = ({ fields, nullsItems }: { fields: any; nullsItems: any }) => {
   const [isOpen, setIsOpen] = React.useState(false)
 
-  return (
+  return nullsItems.length > 0 ? (
     <>
       <Flex justifyContent="center" mt={3} mb={3}>
         <Box
           as="button"
-          bg="red.400"
+          bg="yellow.400"
           color="white"
           px={4}
           py={2}
@@ -374,5 +392,7 @@ const NullFieldsButton = ({ fields, nullsItems }) => {
         </>
       )}
     </>
+  ) : (
+    <></>
   )
 }
