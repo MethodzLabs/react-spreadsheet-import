@@ -71,11 +71,12 @@ export const MatchColumnsStep = <T extends string>({
   headerValues,
   onContinue,
   onBack,
-  profile
+  profile,
 }: MatchColumnsProps<T>) => {
   const toast = useToast()
   const dataExample = data.slice(0, 2)
-  const { fields, autoMapHeaders, autoMapSelectValues, autoMapDistance, translations,savedMapping, saveMapping } = useRsi<T>()
+  const { fields, autoMapHeaders, autoMapSelectValues, autoMapDistance, translations, savedMapping, saveMapping, saveSavedAlternateFields } =
+    useRsi<T>()
   const [isLoading, setIsLoading] = useState(false)
   const [columns, setColumns] = useState<Columns<T>>(
     // Do not remove spread, it indexes empty array elements, otherwise map() skips over them
@@ -85,18 +86,14 @@ export const MatchColumnsStep = <T extends string>({
 
   const onChange = useCallback(
     (value: T, columnIndex: number) => {
-      console.log(value)
-      console.log(columnIndex)
-      console.log(headerValues)
-
-
+      saveSavedAlternateFields(value, headerValues[columnIndex]?.toString() as string)
       const field = fields.find((field) => field.key === value) as unknown as Field<T>
       const existingFieldIndex = columns.findIndex((column) => "value" in column && column.value === field.key)
       setColumns(
         columns.map<Column<T>>((column, index) => {
-          columnIndex === index ? setColumn(column, savedMapping,field, data) : column
+          columnIndex === index ? setColumn(column, savedMapping, field, data) : column
           if (columnIndex === index) {
-            return setColumn(column, savedMapping,field, data, autoMapSelectValues)
+            return setColumn(column, savedMapping, field, data, autoMapSelectValues)
           } else if (index === existingFieldIndex) {
             toast({
               status: "warning",
@@ -106,7 +103,7 @@ export const MatchColumnsStep = <T extends string>({
               description: translations.matchColumnsStep.duplicateColumnWarningDescription,
               isClosable: true,
             })
-            return setColumn(column,savedMapping)
+            return setColumn(column, savedMapping)
           } else {
             return column
           }

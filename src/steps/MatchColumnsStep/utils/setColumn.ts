@@ -3,10 +3,14 @@ import { Column, ColumnType, MatchColumnsProps, MatchedOptions } from "../MatchC
 import { uniqueEntries } from "./uniqueEntries"
 type KeyValue = {
   [key: string]: string;
-};
-type savedMapping =  {
-  [key: string]: KeyValue[];
-};
+}
+type savedMapping = {
+  [key: string]: KeyValue[]
+}
+function toUpperSnakeCase(str: string) {
+  return str.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase()
+}
+
 export const setColumn = <T extends string>(
   oldColumn: Column<T>,
   savedMapping: any,
@@ -26,20 +30,10 @@ export const setColumn = <T extends string>(
               (fieldOption) => fieldOption.value === record.entry || fieldOption.label === record.entry,
             )?.value
 
-          if (savedMapping ) {
-            console.log(savedMapping)
-            if (savedMapping[field.key]) {
-              console.log(savedMapping[field.key])
-              if (savedMapping[field.key][record.value]) {
-                console.log(savedMapping[field.key][record.value])
-              }
-            }
-          }
-
-            if (!value){
-              if (savedMapping && savedMapping[field.key] && savedMapping[field.key].map[record.entry]){
-
-                value = savedMapping[field.key][record.entry]
+            if (!value) {
+              const fieldKey = toUpperSnakeCase(field?.key)
+              if (savedMapping && savedMapping[fieldKey] && savedMapping[fieldKey].map[record.entry]) {
+                value = savedMapping[fieldKey].map[record.entry]
               }
             }
             return value ? ({ ...record, value } as MatchedOptions<T>) : (record as MatchedOptions<T>)

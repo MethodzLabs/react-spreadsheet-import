@@ -230,7 +230,9 @@ export const UploadFlow = ({ state, onNext, onBack }: Props) => {
         />
       )
     case StepType.validateData:
-      return <ValidationStep profile={profile as Profile} initialData={state.data} file={uploadedFile!} onBack={onBack} />
+      return (
+        <ValidationStep profile={profile as Profile} initialData={state.data} file={uploadedFile!} onBack={onBack} />
+      )
     default:
       return <Progress isIndeterminate />
   }

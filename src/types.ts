@@ -62,7 +62,6 @@ export type RsiProps<T extends string> = {
 
   saveMapping: (field: string,key: string, value: string) => any
 
-  getSavedAlternateFields: () => any
 
   saveSavedAlternateFields: (field: string, value: string) => any
 

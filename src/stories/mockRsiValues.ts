@@ -1,7 +1,10 @@
+
 import type { RsiProps } from "../types"
 import { defaultRSIProps } from "../ReactSpreadsheetImport"
 import axios from "axios"
 
+const savedAlternateFields = (await axios.get(`http://localhost:8091/import/savedAlternateFields`)).data.data
+console.log(savedAlternateFields)
 const fields = [
   {
     label: "Url",
@@ -458,7 +461,7 @@ const fields = [
   {
     label: "Nombre max de liens sources externes",
     key: "nbMaxLinksExternal",
-    alternateMatches: ["externalLink"],
+    alternateMatches: savedAlternateFields.alternateMatchs["NB_MAX_LINKS_EXTERNAL"].list,
     fieldType: {
       type: "input",
     },
@@ -473,7 +476,7 @@ const fields = [
   {
     label: "Nombre max de liens vers client",
     key: "nbMaxLinksClient",
-    alternateMatches: ["clientLink"],
+    alternateMatches: savedAlternateFields.alternateMatchs["NB_MAX_LINKS_CLIENT"].list,
     fieldType: {
       type: "input",
     },
@@ -538,7 +541,7 @@ export const mockRsiValues = mockComponentBehaviourForTypes({
   isOpen: true,
   isNavigationEnabled:true,
   autoMapDistance: 2,
-  savedMapping: (await axios.get(`http://localhost:8091/import/savedMapping`)).data.data,
+  savedMapping: (await axios.get(`http://localhost:8091/import/savedMapping`)).data.data.savedMapping,
   getProfiles: async (orgaId) => {
     return axios.get(`http://localhost:8091/import/profile/${orgaId}`)
   },
@@ -554,11 +557,8 @@ export const mockRsiValues = mockComponentBehaviourForTypes({
     axios.post(`http://localhost:8091/import/savedMapping`, {field:field,key:key,value:value})
 
   },
-  getSavedAlternateFields: async  () => {
-    return axios.get(`http://localhost:8091/savedAlternateFields`)
-  },
   saveSavedAlternateFields:async (field: string, value: string) => {
-    return axios.post(`http://localhost:8091/savedAlternateFields`, {field:field,value:value})
+    return axios.post(`http://localhost:8091/import/savedAlternateFields`, {field:field,value:value})
   },
   onClose: () => {},
   // uploadStepHook: async (data) => {
