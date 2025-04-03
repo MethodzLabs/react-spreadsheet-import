@@ -1,11 +1,7 @@
 .snowpack
-build
 node_modules
 .idea
 web_modules
-dist
-dist-commonjs
-types
 coverage
 /test-results/
 /playwright-report/
