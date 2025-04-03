@@ -67,6 +67,7 @@ const SelectEditorProfileStep = ({ onContinue, organization, onBack }) => {
         });
     }, []);
     const handleContinue = React.useCallback(async () => {
+        console.log(selectedProfile);
         if (!selectedProfile)
             return;
         setIsLoading(true);
@@ -96,14 +97,10 @@ const SelectEditorProfileStep = ({ onContinue, organization, onBack }) => {
                 // Update the profiles list with the edited profile
                 setProfiles((prev) => prev.map((p) => (p.id === response.data.data.id ? response.data.data : p)));
                 // If the edited profile was the selected one, update the selection
-                if (selectedProfile?.id === response.data.data.id) {
-                    setSelectedProfile(profileToSave);
-                }
             }
             else {
                 // Add the new profile to the list
                 setProfiles((prev) => [...prev, response.data.data]);
-                setSelectedProfile(response.data.data);
             }
             // Close the modal and reset editing state
             onClose();
