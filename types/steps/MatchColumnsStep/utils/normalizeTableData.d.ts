@@ -38,19 +38,17 @@ export declare const normalizeTableData: <T extends string>(columns: Columns<T>,
     };
     readonly example?: string | undefined;
 }[], profile: Profile) => ({
-    id?: string | undefined;
-    organizationId?: string | undefined;
-    name?: string | undefined;
-    themes: string[] | undefined;
-    languages: string[] | undefined;
-    targetCountries: string[] | undefined;
+    type?: string | undefined;
+    themes: string | undefined;
+    languages: string | undefined;
+    targetCountries: string | undefined;
     linkType: "DO_FOLLOW" | "NO_FOLLOW" | "BOTH" | undefined;
     nbMaxLinksClient: number | undefined;
     nbMaxLinksExternal: number | undefined;
     nbWords: number | undefined;
     sponso: "BOTH" | "SPONSO" | "NO_SPONSO" | undefined;
-    isPrivate: boolean | undefined;
-    isGoogleNews: boolean | undefined;
+    isPrivate: string | undefined;
+    isGoogleNews: string | undefined;
     validityDuration: "FOREVER" | "SIX_MONTHS" | "TWELVE_MONTHS" | "TWENTY_FOUR_MONTHS" | undefined;
     category: "IMPOSED" | "IMPOSED_CATEGORY" | "NOT_IMPOSED" | undefined;
     categoryUrl: string | undefined;

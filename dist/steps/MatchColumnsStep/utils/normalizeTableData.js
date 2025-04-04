@@ -33,9 +33,10 @@ const normalizeTableData = (columns, data, fields, profile) => {
             }
             return acc;
         }, {});
+        const { id, organizationId, name, ...restResult } = profile;
         // Merge with defaultProfile to add missing keys
         return {
-            ...profile,
+            ...restResult,
             ...result, // values in result override defaultProfile if they exist
         };
     });
